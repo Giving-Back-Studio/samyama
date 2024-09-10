@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import TransactionForm from './TransactionForm';
 import TransactionDialog from './TransactionDialog';
 
@@ -69,6 +70,33 @@ const Transactions = () => {
     }
   };
 
+  const currentYear = new Date().getFullYear();
+
+  const monthlyData = useMemo(() => {
+    if (!transactions) return [];
+
+    const monthlyTotals = Array(12).fill().map(() => ({ income: 0, expenses: 0 }));
+
+    transactions.forEach(transaction => {
+      const date = new Date(transaction.date);
+      if (date.getFullYear() === currentYear) {
+        const month = date.getMonth();
+        const amount = parseFloat(transaction.amount);
+        if (transaction.type === 'income') {
+          monthlyTotals[month].income += amount;
+        } else {
+          monthlyTotals[month].expenses += amount;
+        }
+      }
+    });
+
+    return monthlyTotals.map((data, index) => ({
+      name: new Date(currentYear, index).toLocaleString('default', { month: 'short' }),
+      income: data.income,
+      expenses: data.expenses,
+    }));
+  }, [transactions, currentYear]);
+
   if (isLoading) return <div>Loading transactions...</div>;
   if (error) return <div>Error fetching transactions: {error.message}</div>;
 
@@ -80,6 +108,26 @@ const Transactions = () => {
           <PlusCircle className="mr-2 h-4 w-4" /> Add Transaction
         </Button>
       </div>
+      {transactions.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{currentYear} Income vs Expenses</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={monthlyData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="income" stroke="#8884d8" activeDot={{ r: 8 }} />
+                <Line type="monotone" dataKey="expenses" stroke="#82ca9d" />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
       <Card>
         <CardHeader>
           <CardTitle>Transaction List</CardTitle>
@@ -105,17 +153,17 @@ const Transactions = () => {
               </TableHeader>
               <TableBody>
                 {transactions.map((transaction) => (
-                  <TableRow key={transaction.id}>
+                  <TableRow key={transaction.id} className="cursor-pointer hover:bg-gray-100" onClick={() => handleEdit(transaction)}>
                     <TableCell>{transaction.date}</TableCell>
                     <TableCell>{transaction.type}</TableCell>
                     <TableCell>${parseFloat(transaction.amount).toFixed(2)}</TableCell>
                     <TableCell>{transaction.category}</TableCell>
                     <TableCell>{transaction.description}</TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="sm" onClick={() => handleEdit(transaction)}>
+                      <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleEdit(transaction); }}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(transaction.id)}>
+                      <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleDelete(transaction.id); }}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
