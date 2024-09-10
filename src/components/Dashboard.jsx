@@ -27,12 +27,12 @@ const Dashboard = () => {
   const [openProjects, setOpenProjects] = useState({});
   const queryClient = useQueryClient();
 
-  const { data: projects, isLoading: isLoadingProjects } = useQuery({
+  const { data: projects, isLoading: isLoadingProjects, error: projectsError } = useQuery({
     queryKey: ['projects'],
     queryFn: fetchProjects,
   });
 
-  const { data: activities, isLoading: isLoadingActivities } = useQuery({
+  const { data: activities, isLoading: isLoadingActivities, error: activitiesError } = useQuery({
     queryKey: ['enterpriseActivity'],
     queryFn: fetchEnterpriseActivity,
   });
@@ -60,6 +60,7 @@ const Dashboard = () => {
   };
 
   const renderProjects = (status) => {
+    if (!projects) return null;
     return projects
       .filter(project => project.status === status)
       .map(project => (
@@ -115,6 +116,7 @@ const Dashboard = () => {
   };
 
   if (isLoadingProjects || isLoadingActivities) return <div>Loading dashboard...</div>;
+  if (projectsError || activitiesError) return <div>Error loading dashboard data</div>;
 
   return (
     <div className="space-y-6">
@@ -136,16 +138,20 @@ const Dashboard = () => {
             <CardTitle>Enterprise Activity</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2">
-              {activities.map(activity => (
-                <li key={activity.id} className="flex justify-between items-center">
-                  <span>{activity.description}</span>
-                  <span className="text-sm text-gray-500">
-                    {new Date(activity.timestamp).toLocaleString()}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            {activities && activities.length > 0 ? (
+              <ul className="space-y-2">
+                {activities.map(activity => (
+                  <li key={activity.id} className="flex justify-between items-center">
+                    <span>{activity.description}</span>
+                    <span className="text-sm text-gray-500">
+                      {new Date(activity.timestamp).toLocaleString()}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No recent activity</p>
+            )}
           </CardContent>
         </Card>
       </div>
