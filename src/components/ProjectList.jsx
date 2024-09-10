@@ -21,8 +21,10 @@ const ProjectList = ({ projects, status, openProject, setOpenProject, toggleActi
                       <AccordionItem value={project.id.toString()}>
                         <AccordionTrigger className="hover:no-underline">
                           <div className="flex items-center justify-between w-full">
-                            <span {...provided.dragHandleProps}><GripVertical className="inline mr-2" /></span>
-                            <span className="text-sm md:text-base">{project.name}</span>
+                            <div className="flex items-center">
+                              <span {...provided.dragHandleProps}><GripVertical className="inline mr-2" /></span>
+                              <span className="text-sm md:text-base text-left">{project.name}</span>
+                            </div>
                             <div className="flex items-center space-x-2">
                               {status === 'In Progress' ? (
                                 <Button 

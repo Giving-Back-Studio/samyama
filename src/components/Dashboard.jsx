@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { DragDropContext } from '@hello-pangea/dnd';
 import ProjectList from './ProjectList';
 import ActivityList from './ActivityList';
@@ -111,23 +110,21 @@ const Dashboard = () => {
   };
 
   if (isLoadingProjects || isLoadingActivities) {
-    return <div className="p-4 md:p-8">Loading dashboard...</div>;
+    return <div className="p-4">Loading dashboard...</div>;
   }
 
   if (projectsError || activitiesError) {
-    return <div className="p-4 md:p-8">Error loading dashboard data: {projectsError?.message || activitiesError?.message}</div>;
+    return <div className="p-4">Error loading dashboard data: {projectsError?.message || activitiesError?.message}</div>;
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-8">
-      <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
+    <div className="space-y-6 p-4">
+      <h1 className="text-2xl font-bold">Dashboard</h1>
       <DragDropContext onDragEnd={onDragEnd}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-6">
           <Card>
             <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-left">My Projects</CardTitle>
-              </div>
+              <CardTitle className="text-left">My Projects</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <ProjectList
