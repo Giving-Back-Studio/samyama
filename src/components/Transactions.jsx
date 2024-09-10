@@ -3,18 +3,18 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Pencil, Trash2 } from "lucide-react";
 import TransactionForm from './TransactionForm';
+import TransactionDialog from './TransactionDialog';
 
 const fetchTransactions = async () => {
-  // In a real app, this would fetch from an API
   const storedTransactions = localStorage.getItem('transactions');
   return storedTransactions ? JSON.parse(storedTransactions) : [];
 };
 
 const Transactions = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: transactions, isLoading, error } = useQuery({
@@ -33,6 +33,41 @@ const Transactions = () => {
       setIsFormOpen(false);
     },
   });
+
+  const updateTransactionMutation = useMutation({
+    mutationFn: (updatedTransaction) => {
+      const updatedTransactions = transactions.map(t => 
+        t.id === updatedTransaction.id ? updatedTransaction : t
+      );
+      localStorage.setItem('transactions', JSON.stringify(updatedTransactions));
+      return Promise.resolve(updatedTransaction);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries('transactions');
+      setSelectedTransaction(null);
+    },
+  });
+
+  const deleteTransactionMutation = useMutation({
+    mutationFn: (id) => {
+      const updatedTransactions = transactions.filter(t => t.id !== id);
+      localStorage.setItem('transactions', JSON.stringify(updatedTransactions));
+      return Promise.resolve(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries('transactions');
+    },
+  });
+
+  const handleEdit = (transaction) => {
+    setSelectedTransaction(transaction);
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm('Are you sure you want to delete this transaction?')) {
+      deleteTransactionMutation.mutate(id);
+    }
+  };
 
   if (isLoading) return <div>Loading transactions...</div>;
   if (error) return <div>Error fetching transactions: {error.message}</div>;
@@ -65,6 +100,7 @@ const Transactions = () => {
                   <TableHead>Amount</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Description</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -75,6 +111,14 @@ const Transactions = () => {
                     <TableCell>${parseFloat(transaction.amount).toFixed(2)}</TableCell>
                     <TableCell>{transaction.category}</TableCell>
                     <TableCell>{transaction.description}</TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="sm" onClick={() => handleEdit(transaction)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(transaction.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -86,6 +130,14 @@ const Transactions = () => {
         <TransactionForm
           onClose={() => setIsFormOpen(false)}
           onSubmit={(data) => addTransactionMutation.mutate(data)}
+        />
+      )}
+      {selectedTransaction && (
+        <TransactionDialog
+          transaction={selectedTransaction}
+          onClose={() => setSelectedTransaction(null)}
+          onUpdate={(updatedTransaction) => updateTransactionMutation.mutate(updatedTransaction)}
+          onDelete={(id) => handleDelete(id)}
         />
       )}
     </div>
