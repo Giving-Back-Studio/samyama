@@ -64,7 +64,7 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
           <DialogTitle className="text-2xl font-bold">Edit Project: {project.name}</DialogTitle>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-6 py-4">
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
               <Input
@@ -79,7 +79,7 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
               <ReactQuill
                 value={editedProject.details}
                 onChange={handleDetailsChange}
-                className="h-40"
+                className="h-40 mb-8"
               />
             </div>
             <div>
@@ -87,7 +87,7 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
               <DragDropContext onDragEnd={handleNextActionDragEnd}>
                 <Droppable droppableId="next-actions">
                   {(provided) => (
-                    <ul {...provided.droppableProps} ref={provided.innerRef} className="space-y-2 max-h-40 overflow-y-auto">
+                    <ul {...provided.droppableProps} ref={provided.innerRef} className="space-y-2 max-h-60 overflow-y-auto">
                       {editedProject.nextActions.map((action, index) => (
                         <Draggable key={index} draggableId={`action-${index}`} index={index}>
                           {(provided) => (
@@ -119,7 +119,7 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
               <Button onClick={addNextAction} className="mt-2">Add Action</Button>
             </div>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
               <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
               <Select onValueChange={handleStatusChange} defaultValue={editedProject.status}>
