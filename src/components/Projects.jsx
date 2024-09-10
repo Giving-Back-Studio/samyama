@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,23 +6,24 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Calendar } from "@/components/ui/calendar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CheckCircle, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import ProjectForm from './ProjectForm';
 import ProjectDialog from './ProjectDialog';
 
 const fetchProjects = async () => {
-  // This is a mock function. In a real app, you'd fetch projects from an API.
+  // Mock function to fetch projects
   return [
-    { id: 1, name: 'Spring Planting', status: 'To Do', startDate: '2024-03-01', endDate: '2024-05-01', assignedTo: 'John Doe', details: 'Prepare and plant spring crops', nextActions: ['Buy seeds', 'Prepare soil', 'Set up irrigation'], createdAt: '2024-02-15' },
-    { id: 2, name: 'Irrigation System Upgrade', status: 'In Progress', startDate: '2024-04-01', endDate: '2024-06-15', assignedTo: 'Jane Smith', details: 'Upgrade the farm\'s irrigation system', nextActions: ['Research new systems', 'Get quotes', 'Schedule installation'], createdAt: '2024-03-01' },
-    { id: 3, name: 'Harvest Planning', status: 'Done', startDate: '2024-02-01', endDate: '2024-07-01', assignedTo: 'Bob Johnson', details: 'Plan for summer harvest', nextActions: ['Review crop yields', 'Schedule labor', 'Prepare storage'], createdAt: '2024-01-20' },
+    { id: 1, name: 'Spring Planting', status: 'To Do', startDate: '2024-03-01', endDate: '2024-05-01', assignedTo: 'John Doe', completed: false },
+    { id: 2, name: 'Irrigation System Upgrade', status: 'In Progress', startDate: '2024-04-01', endDate: '2024-06-15', assignedTo: 'Jane Smith', completed: false },
+    { id: 3, name: 'Harvest Planning', status: 'Done', startDate: '2024-02-01', endDate: '2024-07-01', assignedTo: 'Bob Johnson', completed: true },
   ];
 };
 
 const Projects = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'ascending' });
+  const [activeTab, setActiveTab] = useState('all');
   const queryClient = useQueryClient();
 
   const { data: projects, isLoading, error } = useQuery({
@@ -32,8 +33,7 @@ const Projects = () => {
 
   const addProjectMutation = useMutation({
     mutationFn: (newProject) => {
-      // This is a mock function. In a real app, you'd send a POST request to your API.
-      return Promise.resolve({ id: Date.now(), ...newProject, createdAt: new Date().toISOString() });
+      return Promise.resolve({ id: Date.now(), ...newProject, completed: false });
     },
     onSuccess: () => {
       queryClient.invalidateQueries('projects');
@@ -43,7 +43,6 @@ const Projects = () => {
 
   const updateProjectMutation = useMutation({
     mutationFn: (updatedProject) => {
-      // This is a mock function. In a real app, you'd send a PUT request to your API.
       return Promise.resolve(updatedProject);
     },
     onSuccess: () => {
@@ -52,36 +51,52 @@ const Projects = () => {
     },
   });
 
-  const onDragEnd = (result) => {
-    if (!result.destination) return;
-    const items = Array.from(projects);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-    // Update the status based on the new column
-    reorderedItem.status = result.destination.droppableId;
-    // In a real app, you'd update the backend here
-    queryClient.setQueryData(['projects'], items);
+  const toggleProjectCompletion = useMutation({
+    mutationFn: (project) => {
+      const updatedProject = { ...project, completed: !project.completed };
+      return Promise.resolve(updatedProject);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries('projects');
+    },
+  });
+
+  const sortedProjects = useMemo(() => {
+    if (!projects) return [];
+    return [...projects].sort((a, b) => {
+      if (a[sortConfig.key] < b[sortConfig.key]) {
+        return sortConfig.direction === 'ascending' ? -1 : 1;
+      }
+      if (a[sortConfig.key] > b[sortConfig.key]) {
+        return sortConfig.direction === 'ascending' ? 1 : -1;
+      }
+      return 0;
+    });
+  }, [projects, sortConfig]);
+
+  const filteredProjects = useMemo(() => {
+    if (activeTab === 'all') return sortedProjects;
+    return sortedProjects.filter(project => 
+      activeTab === 'completed' ? project.completed : !project.completed
+    );
+  }, [sortedProjects, activeTab]);
+
+  const handleSort = (key) => {
+    setSortConfig(prevConfig => ({
+      key,
+      direction: prevConfig.key === key && prevConfig.direction === 'ascending' ? 'descending' : 'ascending',
+    }));
+  };
+
+  const SortIcon = ({ column }) => {
+    if (sortConfig.key !== column) return <ArrowUpDown className="ml-2 h-4 w-4" />;
+    return sortConfig.direction === 'ascending' ? 
+      <ArrowUp className="ml-2 h-4 w-4" /> : 
+      <ArrowDown className="ml-2 h-4 w-4" />;
   };
 
   if (isLoading) return <div>Loading projects...</div>;
   if (error) return <div>Error fetching projects</div>;
-
-  const columns = ['To Do', 'In Progress', 'Done'];
-
-  const handleProjectClick = (project) => {
-    setSelectedProject(project);
-  };
-
-  const sortedProjects = [...projects].sort((a, b) => {
-    if (sortBy === 'createdAt') {
-      return new Date(b.createdAt) - new Date(a.createdAt);
-    } else if (sortBy === 'startDate') {
-      return new Date(a.startDate) - new Date(b.startDate);
-    } else if (sortBy === 'endDate') {
-      return new Date(a.endDate) - new Date(b.endDate);
-    }
-    return 0;
-  });
 
   return (
     <div className="space-y-6">
@@ -89,109 +104,60 @@ const Projects = () => {
         <h1 className="text-3xl font-bold">Projects</h1>
         <Button onClick={() => setIsFormOpen(true)}>Add Project</Button>
       </div>
-      <Tabs defaultValue="list">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="list">List View</TabsTrigger>
-          <TabsTrigger value="board">Board View</TabsTrigger>
-          <TabsTrigger value="calendar">Calendar View</TabsTrigger>
+          <TabsTrigger value="all">All Projects</TabsTrigger>
+          <TabsTrigger value="active">Active Projects</TabsTrigger>
+          <TabsTrigger value="completed">Completed Projects</TabsTrigger>
         </TabsList>
-        <TabsContent value="list">
+        <TabsContent value={activeTab}>
           <Card>
             <CardHeader>
-              <CardTitle className="flex justify-between items-center">
-                <span>Project List</span>
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="createdAt">Creation Date</SelectItem>
-                    <SelectItem value="startDate">Start Date</SelectItem>
-                    <SelectItem value="endDate">End Date</SelectItem>
-                  </SelectContent>
-                </Select>
-              </CardTitle>
+              <CardTitle>Project List</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Start Date</TableHead>
-                    <TableHead>End Date</TableHead>
-                    <TableHead>Assigned To</TableHead>
+                    <TableHead onClick={() => handleSort('name')} className="cursor-pointer">
+                      Name <SortIcon column="name" />
+                    </TableHead>
+                    <TableHead onClick={() => handleSort('status')} className="cursor-pointer">
+                      Status <SortIcon column="status" />
+                    </TableHead>
+                    <TableHead onClick={() => handleSort('startDate')} className="cursor-pointer">
+                      Start Date <SortIcon column="startDate" />
+                    </TableHead>
+                    <TableHead onClick={() => handleSort('endDate')} className="cursor-pointer">
+                      End Date <SortIcon column="endDate" />
+                    </TableHead>
+                    <TableHead onClick={() => handleSort('assignedTo')} className="cursor-pointer">
+                      Assigned To <SortIcon column="assignedTo" />
+                    </TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {sortedProjects.map((project) => (
-                    <TableRow key={project.id} onClick={() => handleProjectClick(project)} className="cursor-pointer hover:bg-gray-100">
-                      <TableCell>{project.name}</TableCell>
-                      <TableCell>{project.status}</TableCell>
-                      <TableCell>{project.startDate}</TableCell>
-                      <TableCell>{project.endDate}</TableCell>
-                      <TableCell>{project.assignedTo}</TableCell>
+                  {filteredProjects.map((project) => (
+                    <TableRow key={project.id} className="cursor-pointer hover:bg-gray-100">
+                      <TableCell onClick={() => setSelectedProject(project)}>{project.name}</TableCell>
+                      <TableCell onClick={() => setSelectedProject(project)}>{project.status}</TableCell>
+                      <TableCell onClick={() => setSelectedProject(project)}>{project.startDate}</TableCell>
+                      <TableCell onClick={() => setSelectedProject(project)}>{project.endDate}</TableCell>
+                      <TableCell onClick={() => setSelectedProject(project)}>{project.assignedTo}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleProjectCompletion.mutate(project)}
+                        >
+                          <CheckCircle className={`h-5 w-5 ${project.completed ? 'text-green-500' : 'text-gray-300'}`} />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="board">
-          <DragDropContext onDragEnd={onDragEnd}>
-            <div className="grid grid-cols-3 gap-4">
-              {columns.map((column) => (
-                <Card key={column}>
-                  <CardHeader>
-                    <CardTitle>{column}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Droppable droppableId={column}>
-                      {(provided) => (
-                        <ul
-                          {...provided.droppableProps}
-                          ref={provided.innerRef}
-                          className="space-y-2"
-                        >
-                          {sortedProjects
-                            .filter((project) => project.status === column)
-                            .map((project, index) => (
-                              <Draggable key={project.id} draggableId={project.id.toString()} index={index}>
-                                {(provided) => (
-                                  <li
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                    className="bg-white p-2 rounded shadow cursor-pointer"
-                                    onClick={() => handleProjectClick(project)}
-                                  >
-                                    {project.name}
-                                  </li>
-                                )}
-                              </Draggable>
-                            ))}
-                          {provided.placeholder}
-                        </ul>
-                      )}
-                    </Droppable>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </DragDropContext>
-        </TabsContent>
-        <TabsContent value="calendar">
-          <Card>
-            <CardHeader>
-              <CardTitle>Project Calendar</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Calendar
-                mode="multiple"
-                selected={projects.flatMap(project => [new Date(project.startDate), new Date(project.endDate)])}
-                className="rounded-md border"
-              />
             </CardContent>
           </Card>
         </TabsContent>
