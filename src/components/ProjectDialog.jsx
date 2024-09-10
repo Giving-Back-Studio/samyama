@@ -63,8 +63,8 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Edit Project: {project.name}</DialogTitle>
         </DialogHeader>
-        <div className="grid grid-cols-2 gap-6 py-4">
-          <div className="space-y-6">
+        <div className="grid grid-cols-3 gap-6 py-4">
+          <div className="col-span-2 space-y-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
               <Input
@@ -79,7 +79,7 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
               <ReactQuill
                 value={editedProject.details}
                 onChange={handleDetailsChange}
-                className="h-40 mb-8"
+                className="h-40 mb-12"
               />
             </div>
             <div>
