@@ -1,10 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CheckCircle, ArrowUp, ArrowDown } from "lucide-react";
 import ProjectForm from './ProjectForm';
 import ProjectDialog from './ProjectDialog';
 import ProjectBoard from './ProjectBoard';
@@ -62,16 +59,12 @@ const Projects = () => {
     },
   });
 
-  const filteredProjects = useMemo(() => {
-    if (!projects) return [];
-    if (listFilter === 'all') return projects;
-    return projects.filter(project => 
-      listFilter === 'completed' ? project.completed : !project.completed
-    );
-  }, [projects, listFilter]);
+  const handleProjectClick = (project) => {
+    setSelectedProject(project);
+  };
 
   if (isLoading) return <div>Loading projects...</div>;
-  if (error) return <div>Error fetching projects</div>;
+  if (error) return <div>Error fetching projects: {error.message}</div>;
 
   return (
     <div className="space-y-6">
@@ -87,15 +80,15 @@ const Projects = () => {
         </TabsList>
         <TabsContent value="list">
           <ProjectList
-            projects={filteredProjects}
+            projects={projects}
             listFilter={listFilter}
             setListFilter={setListFilter}
             toggleProjectCompletion={toggleProjectCompletion}
-            setSelectedProject={setSelectedProject}
+            setSelectedProject={handleProjectClick}
           />
         </TabsContent>
         <TabsContent value="board">
-          <ProjectBoard projects={projects} onProjectClick={setSelectedProject} />
+          <ProjectBoard projects={projects} onProjectClick={handleProjectClick} />
         </TabsContent>
         <TabsContent value="calendar">
           <ProjectCalendar projects={projects} />

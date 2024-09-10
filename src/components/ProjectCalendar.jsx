@@ -1,5 +1,6 @@
 import React from 'react';
 import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
 
 const ProjectCalendar = ({ projects }) => {
   const projectDates = projects.reduce((acc, project) => {
@@ -28,14 +29,27 @@ const ProjectCalendar = ({ projects }) => {
         selected={new Date()}
         className="rounded-md border"
         components={{
-          DayContent: (props) => (
+          DayContent: ({ date }) => (
             <>
-              {props.day.getDate()}
-              {renderDay(props.date)}
+              {date.getDate()}
+              {renderDay(date)}
             </>
           ),
         }}
       />
+      <div className="mt-4">
+        <h3 className="font-semibold mb-2">Project Timeline:</h3>
+        <ul className="space-y-2">
+          {projects.map((project) => (
+            <li key={project.id} className="flex justify-between items-center">
+              <span>{project.name}</span>
+              <span className="text-sm text-gray-500">
+                {format(new Date(project.startDate), 'MMM d')} - {format(new Date(project.endDate), 'MMM d, yyyy')}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };

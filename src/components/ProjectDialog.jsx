@@ -3,13 +3,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon, GripVertical } from "lucide-react";
 import { format } from "date-fns";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 const ProjectDialog = ({ project, onClose, onUpdate }) => {
   const [editedProject, setEditedProject] = useState(project);
@@ -33,7 +32,7 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
 
   const handleNextActionDragEnd = (result) => {
     if (!result.destination) return;
-    const items = Array.from(editedProject.nextActions);
+    const items = Array.from(editedProject.nextActions || []);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
     setEditedProject((prev) => ({ ...prev, nextActions: items }));
@@ -42,18 +41,18 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
   const addNextAction = () => {
     setEditedProject((prev) => ({
       ...prev,
-      nextActions: [...prev.nextActions, 'New action']
+      nextActions: [...(prev.nextActions || []), 'New action']
     }));
   };
 
   const updateNextAction = (index, value) => {
-    const updatedActions = [...editedProject.nextActions];
+    const updatedActions = [...(editedProject.nextActions || [])];
     updatedActions[index] = value;
     setEditedProject((prev) => ({ ...prev, nextActions: updatedActions }));
   };
 
   const removeNextAction = (index) => {
-    const updatedActions = editedProject.nextActions.filter((_, i) => i !== index);
+    const updatedActions = (editedProject.nextActions || []).filter((_, i) => i !== index);
     setEditedProject((prev) => ({ ...prev, nextActions: updatedActions }));
   };
 
@@ -77,7 +76,7 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
             <div>
               <label htmlFor="details" className="block text-sm font-medium text-gray-700 mb-1">Details</label>
               <ReactQuill
-                value={editedProject.details}
+                value={editedProject.details || ''}
                 onChange={handleDetailsChange}
                 className="h-40 mb-8"
               />
@@ -88,7 +87,7 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
                 <Droppable droppableId="next-actions">
                   {(provided) => (
                     <ul {...provided.droppableProps} ref={provided.innerRef} className="space-y-2 max-h-60 overflow-y-auto">
-                      {editedProject.nextActions.map((action, index) => (
+                      {(editedProject.nextActions || []).map((action, index) => (
                         <Draggable key={index} draggableId={`action-${index}`} index={index}>
                           {(provided) => (
                             <li
@@ -138,7 +137,7 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
               <Input
                 id="assignedTo"
                 name="assignedTo"
-                value={editedProject.assignedTo}
+                value={editedProject.assignedTo || ''}
                 onChange={handleInputChange}
               />
             </div>
@@ -154,7 +153,7 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
                 <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
-                    selected={new Date(editedProject.startDate)}
+                    selected={editedProject.startDate ? new Date(editedProject.startDate) : undefined}
                     onSelect={(date) => handleDateChange(date, 'startDate')}
                     initialFocus
                   />
@@ -173,7 +172,7 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
                 <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
-                    selected={new Date(editedProject.endDate)}
+                    selected={editedProject.endDate ? new Date(editedProject.endDate) : undefined}
                     onSelect={(date) => handleDateChange(date, 'endDate')}
                     initialFocus
                   />
