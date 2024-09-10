@@ -1,136 +1,154 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronRight } from "lucide-react";
-import ProjectDialog from './ProjectDialog';
-import TaskList from './TaskList';
-import WeatherWidget from './WeatherWidget';
-import CropPlanner from './CropPlanner';
+import { CheckCircle, ChevronDown, ChevronRight, ArrowRight } from "lucide-react";
 
 const fetchProjects = async () => {
   // Mock function to fetch projects
   return [
-    { id: 1, name: 'Spring Planting', status: 'In Progress', assignedTo: 'John Doe', completed: false, nextActions: ['Prepare soil', 'Order seeds'] },
-    { id: 2, name: 'Irrigation System Upgrade', status: 'In Progress', assignedTo: 'John Doe', completed: false, nextActions: ['Research pump options', 'Contact suppliers'] },
-    { id: 3, name: 'Harvest Planning', status: 'To Do', assignedTo: 'Jane Smith', completed: false, nextActions: ['Review crop calendar', 'Estimate yields'] },
+    { id: 1, name: 'Spring Planting', status: 'In Progress', nextActions: ['Prepare soil', 'Order seeds'] },
+    { id: 2, name: 'Irrigation System Upgrade', status: 'In Progress', nextActions: ['Research pump options', 'Contact suppliers'] },
+    { id: 3, name: 'Harvest Planning', status: 'To Do', nextActions: ['Review crop calendar', 'Estimate yields'] },
+  ];
+};
+
+const fetchEnterpriseActivity = async () => {
+  // Mock function to fetch all activities
+  return [
+    { id: 1, type: 'Transaction', description: 'New sale: $500', timestamp: '2024-03-15T10:30:00Z' },
+    { id: 2, type: 'Planting', description: 'Planted 100 tomato seedlings', timestamp: '2024-03-14T09:15:00Z' },
+    { id: 3, type: 'Task', description: 'Completed irrigation system maintenance', timestamp: '2024-03-13T14:45:00Z' },
   ];
 };
 
 const Dashboard = () => {
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [openSections, setOpenSections] = useState({
-    myProjects: true,
-    enterpriseActivity: true,
-    inProgress: true,
-    toDo: true,
-    tasks: true,
-    weather: true,
-    cropPlanner: true
-  });
+  const [openProjects, setOpenProjects] = useState({});
+  const queryClient = useQueryClient();
 
-  const { data: projects, isLoading, error } = useQuery({
+  const { data: projects, isLoading: isLoadingProjects } = useQuery({
     queryKey: ['projects'],
     queryFn: fetchProjects,
   });
 
-  const toggleSection = (section) => {
-    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+  const { data: activities, isLoading: isLoadingActivities } = useQuery({
+    queryKey: ['enterpriseActivity'],
+    queryFn: fetchEnterpriseActivity,
+  });
+
+  const updateProjectMutation = useMutation({
+    mutationFn: (updatedProject) => {
+      // Mock function to update a project
+      return Promise.resolve(updatedProject);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries('projects');
+    },
+  });
+
+  const toggleProject = (projectId) => {
+    setOpenProjects(prev => ({ ...prev, [projectId]: !prev[projectId] }));
   };
 
-  const handleProjectClick = (project) => {
-    setSelectedProject(project);
+  const markProjectComplete = (projectId) => {
+    updateProjectMutation.mutate({ id: projectId, status: 'Completed' });
+  };
+
+  const moveProjectToInProgress = (projectId) => {
+    updateProjectMutation.mutate({ id: projectId, status: 'In Progress' });
   };
 
   const renderProjects = (status) => {
     return projects
       .filter(project => project.status === status)
       .map(project => (
-        <div key={project.id} className="mb-4 p-4 border rounded-lg">
-          <h3 
-            className="text-lg font-semibold cursor-pointer hover:text-blue-600"
-            onClick={() => handleProjectClick(project)}
-          >
-            {project.name}
-          </h3>
-          <ul className="list-disc list-inside mt-2">
-            {project.nextActions.map((action, index) => (
-              <li key={index} className="text-sm text-gray-600">{action}</li>
-            ))}
-          </ul>
-        </div>
+        <Card key={project.id} className="mb-4">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              {project.name}
+            </CardTitle>
+            <div className="flex items-center space-x-2">
+              {status === 'In Progress' ? (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => markProjectComplete(project.id)}
+                >
+                  <CheckCircle className="h-4 w-4" />
+                </Button>
+              ) : (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => moveProjectToInProgress(project.id)}
+                >
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              )}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => toggleProject(project.id)}
+              >
+                {openProjects[project.id] ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </CardHeader>
+          <Collapsible open={openProjects[project.id]}>
+            <CollapsibleContent>
+              <CardContent>
+                <ul className="list-disc list-inside">
+                  {project.nextActions.map((action, index) => (
+                    <li key={index} className="text-sm">{action}</li>
+                  ))}
+                </ul>
+              </CardContent>
+            </CollapsibleContent>
+          </Collapsible>
+        </Card>
       ));
   };
 
-  const renderCollapsibleSection = (title, content, section) => (
-    <Collapsible open={openSections[section]} onOpenChange={() => toggleSection(section)}>
-      <CollapsibleTrigger className="flex items-center w-full justify-between p-2 bg-gray-100 rounded-t-lg">
-        <h2 className="text-xl font-bold">{title}</h2>
-        {openSections[section] ? <ChevronDown /> : <ChevronRight />}
-      </CollapsibleTrigger>
-      <CollapsibleContent className="p-4 border border-t-0 rounded-b-lg">
-        {content}
-      </CollapsibleContent>
-    </Collapsible>
-  );
-
-  if (isLoading) return <div>Loading dashboard...</div>;
-  if (error) return <div>Error loading dashboard: {error.message}</div>;
+  if (isLoadingProjects || isLoadingActivities) return <div>Loading dashboard...</div>;
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Dashboard</h1>
-      <div className="space-y-4">
-        {renderCollapsibleSection(
-          "My Projects",
-          <div className="space-y-4">
-            {renderCollapsibleSection(
-              "In Progress Projects",
-              renderProjects('In Progress'),
-              'inProgress'
-            )}
-            {renderCollapsibleSection(
-              "To Do Projects",
-              renderProjects('To Do'),
-              'toDo'
-            )}
-          </div>,
-          'myProjects'
-        )}
-        {renderCollapsibleSection(
-          "Enterprise Activity",
-          <div className="space-y-4">
-            {renderCollapsibleSection(
-              "Tasks",
-              <TaskList fullView={true} />,
-              'tasks'
-            )}
-            {renderCollapsibleSection(
-              "Weather",
-              <WeatherWidget />,
-              'weather'
-            )}
-            {renderCollapsibleSection(
-              "Crop Planner",
-              <CropPlanner />,
-              'cropPlanner'
-            )}
-          </div>,
-          'enterpriseActivity'
-        )}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>My Projects</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <h3 className="text-lg font-semibold mb-2">In Progress</h3>
+            {renderProjects('In Progress')}
+            <h3 className="text-lg font-semibold mb-2 mt-4">To Do</h3>
+            {renderProjects('To Do')}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Enterprise Activity</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {activities.map(activity => (
+                <li key={activity.id} className="flex justify-between items-center">
+                  <span>{activity.description}</span>
+                  <span className="text-sm text-gray-500">
+                    {new Date(activity.timestamp).toLocaleString()}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
       </div>
-      {selectedProject && (
-        <ProjectDialog
-          project={selectedProject}
-          onClose={() => setSelectedProject(null)}
-          onUpdate={(updatedProject) => {
-            // Handle project update
-            console.log('Project updated:', updatedProject);
-            setSelectedProject(null);
-          }}
-        />
-      )}
     </div>
   );
 };
