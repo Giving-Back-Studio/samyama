@@ -5,19 +5,17 @@ import WeatherWidget from './WeatherWidget';
 import TaskBoard from './TaskBoard';
 import CropPlanner from './CropPlanner';
 import EcosystemMap from './EcosystemMap';
-import Styleguide from './Styleguide';
 
 const Dashboard = () => {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6">Permaculture Farm Dashboard</h1>
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="tasks">Tasks</TabsTrigger>
           <TabsTrigger value="planning">Planning</TabsTrigger>
           <TabsTrigger value="ecosystem">Ecosystem</TabsTrigger>
-          <TabsTrigger value="styleguide">Styleguide</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -66,16 +64,6 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <EcosystemMap />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="styleguide">
-          <Card>
-            <CardHeader>
-              <CardTitle>Styleguide</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Styleguide />
             </CardContent>
           </Card>
         </TabsContent>
