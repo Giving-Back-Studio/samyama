@@ -8,8 +8,9 @@ import { PlusCircle } from "lucide-react";
 import TransactionForm from './TransactionForm';
 
 const fetchTransactions = async () => {
-  // Mock function to fetch transactions
-  return [];
+  // In a real app, this would fetch from an API
+  const storedTransactions = localStorage.getItem('transactions');
+  return storedTransactions ? JSON.parse(storedTransactions) : [];
 };
 
 const Transactions = () => {
@@ -23,7 +24,8 @@ const Transactions = () => {
 
   const addTransactionMutation = useMutation({
     mutationFn: (newTransaction) => {
-      // Mock function to add a new transaction
+      const updatedTransactions = [...(transactions || []), { id: Date.now(), ...newTransaction }];
+      localStorage.setItem('transactions', JSON.stringify(updatedTransactions));
       return Promise.resolve({ id: Date.now(), ...newTransaction });
     },
     onSuccess: () => {
@@ -50,7 +52,7 @@ const Transactions = () => {
         <CardContent>
           {transactions.length === 0 ? (
             <div className="text-center py-8">
-              <h3 className="text-lg font-semibold mb-2">No transactions yet?</h3>
+              <h3 className="text-lg font-semibold mb-2">No transactions yet</h3>
               <p className="text-gray-500 mb-4">Add a transaction and it will show up here.</p>
               <Button onClick={() => setIsFormOpen(true)}>Add Your First Transaction</Button>
             </div>
@@ -70,7 +72,7 @@ const Transactions = () => {
                   <TableRow key={transaction.id}>
                     <TableCell>{transaction.date}</TableCell>
                     <TableCell>{transaction.type}</TableCell>
-                    <TableCell>${transaction.amount.toFixed(2)}</TableCell>
+                    <TableCell>${parseFloat(transaction.amount).toFixed(2)}</TableCell>
                     <TableCell>{transaction.category}</TableCell>
                     <TableCell>{transaction.description}</TableCell>
                   </TableRow>
