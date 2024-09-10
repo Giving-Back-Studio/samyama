@@ -41,20 +41,20 @@ const ProjectForm = ({ onClose, onSubmit }) => {
                   name="details"
                   control={control}
                   render={({ field }) => (
-                    <ReactQuill {...field} className="h-40 mb-12" />
+                    <ReactQuill {...field} className="h-40 mb-8" />
                   )}
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Next Actions</label>
+              <div className="mt-8">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Next Actions</label>
                 <Controller
                   name="nextActions"
                   control={control}
                   defaultValue={[]}
                   render={({ field }) => (
-                    <div>
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
                       {field.value.map((action, index) => (
-                        <div key={index} className="flex items-center space-x-2 mb-2">
+                        <div key={index} className="flex items-center space-x-2 bg-gray-100 p-2 rounded-md">
                           <Input
                             value={action}
                             onChange={(e) => {
@@ -62,6 +62,7 @@ const ProjectForm = ({ onClose, onSubmit }) => {
                               newActions[index] = e.target.value;
                               field.onChange(newActions);
                             }}
+                            className="flex-grow"
                           />
                           <Button
                             type="button"

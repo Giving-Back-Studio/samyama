@@ -79,11 +79,11 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
               <ReactQuill
                 value={editedProject.details}
                 onChange={handleDetailsChange}
-                className="h-40 mb-12"
+                className="h-40 mb-8"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Next Actions</label>
+            <div className="mt-8">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Next Actions</label>
               <DragDropContext onDragEnd={handleNextActionDragEnd}>
                 <Droppable droppableId="next-actions">
                   {(provided) => (
