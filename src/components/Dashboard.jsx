@@ -3,14 +3,25 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { CheckCircle, ArrowRight } from "lucide-react";
+import { CheckCircle, ArrowRight, GripVertical } from "lucide-react";
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const fetchProjects = async () => {
   // Mock function to fetch projects
   return [
-    { id: 1, name: 'Spring Planting', status: 'In Progress', nextActions: ['Prepare soil', 'Order seeds'] },
-    { id: 2, name: 'Irrigation System Upgrade', status: 'In Progress', nextActions: ['Research pump options', 'Contact suppliers'] },
-    { id: 3, name: 'Harvest Planning', status: 'To Do', nextActions: ['Review crop calendar', 'Estimate yields'] },
+    { id: 1, name: 'Spring Planting', status: 'In Progress', nextActions: [
+      { id: 'action-1', content: 'Prepare soil', completed: false },
+      { id: 'action-2', content: 'Order seeds', completed: false },
+    ]},
+    { id: 2, name: 'Irrigation System Upgrade', status: 'In Progress', nextActions: [
+      { id: 'action-3', content: 'Research pump options', completed: false },
+      { id: 'action-4', content: 'Contact suppliers', completed: false },
+    ]},
+    { id: 3, name: 'Harvest Planning', status: 'To Do', nextActions: [
+      { id: 'action-5', content: 'Review crop calendar', completed: false },
+      { id: 'action-6', content: 'Estimate yields', completed: false },
+    ]},
   ];
 };
 
@@ -59,6 +70,32 @@ const Dashboard = () => {
     updateProjectMutation.mutate({ id: projectId, status: 'In Progress' });
   };
 
+  const updateNextActions = (projectId, newNextActions) => {
+    updateProjectMutation.mutate({
+      id: projectId,
+      nextActions: newNextActions,
+    });
+  };
+
+  const onDragEnd = (result, projectId) => {
+    if (!result.destination) return;
+
+    const project = projects.find(p => p.id === projectId);
+    const newNextActions = Array.from(project.nextActions);
+    const [reorderedItem] = newNextActions.splice(result.source.index, 1);
+    newNextActions.splice(result.destination.index, 0, reorderedItem);
+
+    updateNextActions(projectId, newNextActions);
+  };
+
+  const toggleActionCompletion = (projectId, actionId) => {
+    const project = projects.find(p => p.id === projectId);
+    const newNextActions = project.nextActions.map(action =>
+      action.id === actionId ? { ...action, completed: !action.completed } : action
+    );
+    updateNextActions(projectId, newNextActions);
+  };
+
   const renderProjects = (status) => {
     if (!projects || projects.length === 0) return null;
     const filteredProjects = projects.filter(project => project.status === status);
@@ -72,32 +109,79 @@ const Dashboard = () => {
               <div className="flex items-center justify-between w-full">
                 <span>{project.name}</span>
                 <div className="flex items-center space-x-2">
-                  {status === 'In Progress' ? (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={(e) => { e.stopPropagation(); markProjectComplete(project.id); }}
-                    >
-                      <CheckCircle className="h-4 w-4" />
-                    </Button>
-                  ) : (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={(e) => { e.stopPropagation(); moveProjectToInProgress(project.id); }}
-                    >
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  )}
+                  <TooltipProvider>
+                    {status === 'In Progress' ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={(e) => { e.stopPropagation(); markProjectComplete(project.id); }}
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Mark as complete</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={(e) => { e.stopPropagation(); moveProjectToInProgress(project.id); }}
+                          >
+                            <ArrowRight className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Mark as in progress</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
+                  </TooltipProvider>
                 </div>
               </div>
             </AccordionTrigger>
             <AccordionContent>
-              <ul className="list-disc list-inside pl-4">
-                {project.nextActions && project.nextActions.map((action, index) => (
-                  <li key={index} className="text-sm">{action}</li>
-                ))}
-              </ul>
+              <DragDropContext onDragEnd={(result) => onDragEnd(result, project.id)}>
+                <Droppable droppableId={`project-${project.id}`}>
+                  {(provided) => (
+                    <ul
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                      className="space-y-2"
+                    >
+                      {project.nextActions && project.nextActions.map((action, index) => (
+                        <Draggable key={action.id} draggableId={action.id} index={index}>
+                          {(provided) => (
+                            <li
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className="flex items-center space-x-2 bg-gray-100 p-2 rounded-md"
+                            >
+                              <span {...provided.dragHandleProps}>
+                                <GripVertical className="h-4 w-4 text-gray-400" />
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => toggleActionCompletion(project.id, action.id)}
+                              >
+                                <CheckCircle className={`h-4 w-4 ${action.completed ? 'text-green-500' : 'text-gray-300'}`} />
+                              </Button>
+                              <span className={action.completed ? 'line-through text-gray-500' : ''}>{action.content}</span>
+                            </li>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </ul>
+                  )}
+                </Droppable>
+              </DragDropContext>
             </AccordionContent>
           </AccordionItem>
         ))}
