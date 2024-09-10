@@ -3,11 +3,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import ProjectDialog from './ProjectDialog';
 import RichTextEditor from './RichTextEditor';
+import TaskList from './TaskList';
+import WeatherWidget from './WeatherWidget';
+import CropPlanner from './CropPlanner';
 
 const fetchProjects = async () => {
-  // Mock function to fetch projects. In a real app, this would be an API call.
+  // Mock function to fetch projects
   return [
     { id: 1, name: 'Spring Planting', status: 'In Progress', assignedTo: 'John Doe', completed: false, nextActions: ['Prepare soil', 'Order seeds'] },
     { id: 2, name: 'Irrigation System Upgrade', status: 'In Progress', assignedTo: 'John Doe', completed: false, nextActions: ['Research pump options', 'Contact suppliers'] },
@@ -34,9 +37,23 @@ const Dashboard = () => {
     },
   });
 
+  const updateProjectMutation = useMutation({
+    mutationFn: (updatedProject) => {
+      return Promise.resolve(updatedProject);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['projects']);
+      setSelectedProject(null);
+    },
+  });
+
   const handleSaveNotes = () => {
     // In a real app, this would save the notes to a backend
     console.log('Saving notes:', notes);
+  };
+
+  const handleProjectClick = (project) => {
+    setSelectedProject(project);
   };
 
   const currentProjects = projects?.filter(project => project.status === 'In Progress' && project.assignedTo === 'John Doe') || [];
@@ -59,7 +76,12 @@ const Dashboard = () => {
             {currentProjects.map(project => (
               <div key={project.id} className="mb-4 p-4 border rounded-lg">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">{project.name}</h3>
+                  <h3 
+                    className="text-lg font-semibold cursor-pointer hover:text-blue-600"
+                    onClick={() => handleProjectClick(project)}
+                  >
+                    {project.name}
+                  </h3>
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       checked={project.completed}
@@ -68,13 +90,6 @@ const Dashboard = () => {
                     <span>{project.completed ? 'Completed' : 'In Progress'}</span>
                   </div>
                 </div>
-                <Button 
-                  variant="link" 
-                  onClick={() => setSelectedProject(project)}
-                  className="mt-2 p-0"
-                >
-                  View Details
-                </Button>
               </div>
             ))}
           </CardContent>
@@ -104,28 +119,37 @@ const Dashboard = () => {
             <Button onClick={handleSaveNotes}>Save Notes</Button>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Weather</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <WeatherWidget />
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Tasks</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TaskList />
+          </CardContent>
+        </Card>
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <CardTitle>Crop Planner</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CropPlanner />
+          </CardContent>
+        </Card>
       </div>
       {selectedProject && (
-        <Dialog open={!!selectedProject} onOpenChange={() => setSelectedProject(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{selectedProject.name}</DialogTitle>
-            </DialogHeader>
-            <div className="py-4">
-              <p><strong>Status:</strong> {selectedProject.status}</p>
-              <p><strong>Assigned To:</strong> {selectedProject.assignedTo}</p>
-              <h4 className="font-semibold mt-4 mb-2">Next Actions:</h4>
-              <ul className="list-disc list-inside">
-                {selectedProject.nextActions.map((action, index) => (
-                  <li key={index}>{action}</li>
-                ))}
-              </ul>
-            </div>
-            <DialogFooter>
-              <Button onClick={() => setSelectedProject(null)}>Close</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <ProjectDialog
+          project={selectedProject}
+          onClose={() => setSelectedProject(null)}
+          onUpdate={(updatedProject) => updateProjectMutation.mutate(updatedProject)}
+        />
       )}
     </div>
   );
