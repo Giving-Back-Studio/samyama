@@ -48,11 +48,11 @@ const Dashboard = () => {
   });
 
   const handleSaveNotes = () => {
-    // In a real app, this would save the notes to a backend
     console.log('Saving notes:', notes);
   };
 
   const handleProjectClick = (project) => {
+    console.log('Project clicked:', project);
     if (project && project.id) {
       setSelectedProject(project);
     }

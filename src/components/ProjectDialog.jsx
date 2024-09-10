@@ -1,17 +1,23 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import ProjectFormFields from './ProjectFormFields';
 import { useForm } from 'react-hook-form';
 
 const ProjectDialog = ({ project, onClose, onUpdate }) => {
-  const { control, handleSubmit, setValue } = useForm({
+  const { control, handleSubmit } = useForm({
     defaultValues: project
   });
 
   const handleUpdate = (data) => {
+    console.log('Updating project:', data);
     onUpdate(data);
   };
+
+  if (!project) {
+    console.error('ProjectDialog: project is undefined');
+    return null;
+  }
 
   return (
     <Dialog open={true} onOpenChange={onClose}>

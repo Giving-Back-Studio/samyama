@@ -7,7 +7,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
-import RichTextEditor from './RichTextEditor';
 
 const ProjectFormFields = ({ control, errors }) => {
   return (
@@ -21,17 +20,17 @@ const ProjectFormFields = ({ control, errors }) => {
             rules={{ required: "Project name is required" }}
             render={({ field }) => <Input id="name" {...field} />}
           />
-          {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
+          {errors?.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
         </div>
         <div>
           <label htmlFor="details" className="block text-sm font-medium text-gray-700 mb-1">Details</label>
           <Controller
             name="details"
             control={control}
-            render={({ field }) => <RichTextEditor {...field} />}
+            render={({ field }) => <Input id="details" {...field} />}
           />
         </div>
-        <div className="mt-8">
+        <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Next Actions</label>
           <Controller
             name="nextActions"
@@ -120,8 +119,8 @@ const ProjectFormFields = ({ control, errors }) => {
                 <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
+                    selected={field.value ? new Date(field.value) : undefined}
+                    onSelect={(date) => field.onChange(date ? date.toISOString() : null)}
                     initialFocus
                   />
                 </PopoverContent>
@@ -145,8 +144,8 @@ const ProjectFormFields = ({ control, errors }) => {
                 <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
+                    selected={field.value ? new Date(field.value) : undefined}
+                    onSelect={(date) => field.onChange(date ? date.toISOString() : null)}
                     initialFocus
                   />
                 </PopoverContent>
