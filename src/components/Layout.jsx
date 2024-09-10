@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Home, Briefcase, Leaf, DollarSign, ShoppingBag, Users, ChevronDown, ChevronRight } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { cn } from "@/lib/utils";
 
 const Layout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [openGroups, setOpenGroups] = useState({
     plantTrackers: true,
     accounting: true,
@@ -24,51 +26,51 @@ const Layout = () => {
 
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* Left Navigation */}
       <nav className="w-64 bg-white shadow-md">
         <div className="p-4">
           <h1 className="text-2xl font-bold text-green-600">Samyama</h1>
         </div>
         <ul className="space-y-2 p-4">
-          <NavItem to="/" icon={<Home size={20} />} label="Home" />
-          <NavItem to="/projects" icon={<Briefcase size={20} />} label="Projects" />
+          <NavItem to="/" icon={<Home size={20} />} label="Home" currentPath={location.pathname} />
+          <NavItem to="/projects" icon={<Briefcase size={20} />} label="Projects" currentPath={location.pathname} />
           <NavGroup
             icon={<Leaf size={20} />}
             label="Plant Trackers"
             isOpen={openGroups.plantTrackers}
             onClick={() => handleGroupClick('plantTrackers', '/plants')}
+            currentPath={location.pathname}
           >
-            <NavItem to="/plants" label="My Plants" />
-            <NavItem to="/plant-locations" label="Plant Locations" />
+            <NavItem to="/plants" label="My Plants" currentPath={location.pathname} />
+            <NavItem to="/plant-locations" label="Plant Locations" currentPath={location.pathname} />
           </NavGroup>
           <NavGroup
             icon={<DollarSign size={20} />}
             label="Accounting"
             isOpen={openGroups.accounting}
             onClick={() => handleGroupClick('accounting', '/transactions')}
+            currentPath={location.pathname}
           >
-            <NavItem to="/transactions" label="Transactions" />
-            <NavItem to="/pl-statement" label="P&L Statement" />
-            <NavItem to="/cash-flow" label="Cash Flow" />
-            <NavItem to="/balance-sheet" label="Balance Sheet" />
-            <NavItem to="/budgeting" label="Budgeting" />
+            <NavItem to="/transactions" label="Transactions" currentPath={location.pathname} />
+            <NavItem to="/pl-statement" label="P&L Statement" currentPath={location.pathname} />
+            <NavItem to="/cash-flow" label="Cash Flow" currentPath={location.pathname} />
+            <NavItem to="/balance-sheet" label="Balance Sheet" currentPath={location.pathname} />
+            <NavItem to="/budgeting" label="Budgeting" currentPath={location.pathname} />
           </NavGroup>
           <NavGroup
             icon={<ShoppingBag size={20} />}
             label="Market"
             isOpen={openGroups.market}
             onClick={() => handleGroupClick('market', '/market-dashboard')}
+            currentPath={location.pathname}
           >
-            <NavItem to="/market-dashboard" label="Dashboard" />
-            <NavItem to="/products" label="Products" />
-            <NavItem to="/online-store" label="Online Store" />
-            <NavItem to="/pickup-locations" label="Pickup Locations" />
+            <NavItem to="/market-dashboard" label="Dashboard" currentPath={location.pathname} />
+            <NavItem to="/products" label="Products" currentPath={location.pathname} />
+            <NavItem to="/online-store" label="Online Store" currentPath={location.pathname} />
+            <NavItem to="/pickup-locations" label="Pickup Locations" currentPath={location.pathname} />
           </NavGroup>
-          <NavItem to="/contacts" icon={<Users size={20} />} label="Contacts" />
+          <NavItem to="/contacts" icon={<Users size={20} />} label="Contacts" currentPath={location.pathname} />
         </ul>
       </nav>
-
-      {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-8">
         <Outlet />
       </main>
@@ -76,19 +78,28 @@ const Layout = () => {
   );
 };
 
-const NavItem = ({ to, icon, label }) => (
+const NavItem = ({ to, icon, label, currentPath }) => (
   <li>
-    <Link to={to} className="flex items-center space-x-3 text-gray-700 hover:bg-green-50 rounded-md p-2">
+    <Link
+      to={to}
+      className={cn(
+        "flex items-center space-x-3 text-gray-700 hover:bg-green-50 rounded-md p-2",
+        currentPath === to && "bg-green-100 text-green-800"
+      )}
+    >
       {icon}
       <span>{label}</span>
     </Link>
   </li>
 );
 
-const NavGroup = ({ icon, label, children, isOpen, onClick }) => (
+const NavGroup = ({ icon, label, children, isOpen, onClick, currentPath }) => (
   <li>
     <Collapsible open={isOpen} onOpenChange={onClick}>
-      <CollapsibleTrigger className="flex items-center justify-between w-full text-gray-700 hover:bg-green-50 rounded-md p-2">
+      <CollapsibleTrigger className={cn(
+        "flex items-center justify-between w-full text-gray-700 hover:bg-green-50 rounded-md p-2",
+        currentPath.startsWith(`/${label.toLowerCase().replace(' ', '-')}`) && "bg-green-100 text-green-800"
+      )}>
         <div className="flex items-center space-x-3">
           {icon}
           <span>{label}</span>
