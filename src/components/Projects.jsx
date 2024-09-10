@@ -7,18 +7,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Calendar } from "@/components/ui/calendar";
 import ProjectForm from './ProjectForm';
+import ProjectDialog from './ProjectDialog';
 
 const fetchProjects = async () => {
   // This is a mock function. In a real app, you'd fetch projects from an API.
   return [
-    { id: 1, name: 'Spring Planting', status: 'To Do', dueDate: '2024-05-01' },
-    { id: 2, name: 'Irrigation System Upgrade', status: 'In Progress', dueDate: '2024-06-15' },
-    { id: 3, name: 'Harvest Planning', status: 'Done', dueDate: '2024-07-01' },
+    { id: 1, name: 'Spring Planting', status: 'To Do', startDate: '2024-03-01', endDate: '2024-05-01', assignedTo: 'John Doe', details: 'Prepare and plant spring crops', nextActions: ['Buy seeds', 'Prepare soil', 'Set up irrigation'] },
+    { id: 2, name: 'Irrigation System Upgrade', status: 'In Progress', startDate: '2024-04-01', endDate: '2024-06-15', assignedTo: 'Jane Smith', details: 'Upgrade the farm\'s irrigation system', nextActions: ['Research new systems', 'Get quotes', 'Schedule installation'] },
+    { id: 3, name: 'Harvest Planning', status: 'Done', startDate: '2024-02-01', endDate: '2024-07-01', assignedTo: 'Bob Johnson', details: 'Plan for summer harvest', nextActions: ['Review crop yields', 'Schedule labor', 'Prepare storage'] },
   ];
 };
 
 const Projects = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: projects, isLoading, error } = useQuery({
@@ -37,6 +39,17 @@ const Projects = () => {
     },
   });
 
+  const updateProjectMutation = useMutation({
+    mutationFn: (updatedProject) => {
+      // This is a mock function. In a real app, you'd send a PUT request to your API.
+      return Promise.resolve(updatedProject);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries('projects');
+      setSelectedProject(null);
+    },
+  });
+
   const onDragEnd = (result) => {
     if (!result.destination) return;
     const items = Array.from(projects);
@@ -52,6 +65,10 @@ const Projects = () => {
   if (error) return <div>Error fetching projects</div>;
 
   const columns = ['To Do', 'In Progress', 'Done'];
+
+  const handleProjectClick = (project) => {
+    setSelectedProject(project);
+  };
 
   return (
     <div className="space-y-6">
@@ -76,15 +93,19 @@ const Projects = () => {
                   <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Due Date</TableHead>
+                    <TableHead>Start Date</TableHead>
+                    <TableHead>End Date</TableHead>
+                    <TableHead>Assigned To</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {projects.map((project) => (
-                    <TableRow key={project.id}>
+                    <TableRow key={project.id} onClick={() => handleProjectClick(project)} className="cursor-pointer hover:bg-gray-100">
                       <TableCell>{project.name}</TableCell>
                       <TableCell>{project.status}</TableCell>
-                      <TableCell>{project.dueDate}</TableCell>
+                      <TableCell>{project.startDate}</TableCell>
+                      <TableCell>{project.endDate}</TableCell>
+                      <TableCell>{project.assignedTo}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -117,7 +138,8 @@ const Projects = () => {
                                     ref={provided.innerRef}
                                     {...provided.draggableProps}
                                     {...provided.dragHandleProps}
-                                    className="bg-white p-2 rounded shadow"
+                                    className="bg-white p-2 rounded shadow cursor-pointer"
+                                    onClick={() => handleProjectClick(project)}
                                   >
                                     {project.name}
                                   </li>
@@ -142,7 +164,7 @@ const Projects = () => {
             <CardContent>
               <Calendar
                 mode="multiple"
-                selected={projects.map(project => new Date(project.dueDate))}
+                selected={projects.flatMap(project => [new Date(project.startDate), new Date(project.endDate)])}
                 className="rounded-md border"
               />
             </CardContent>
@@ -153,6 +175,13 @@ const Projects = () => {
         <ProjectForm
           onClose={() => setIsFormOpen(false)}
           onSubmit={(data) => addProjectMutation.mutate(data)}
+        />
+      )}
+      {selectedProject && (
+        <ProjectDialog
+          project={selectedProject}
+          onClose={() => setSelectedProject(null)}
+          onUpdate={(updatedProject) => updateProjectMutation.mutate(updatedProject)}
         />
       )}
     </div>
