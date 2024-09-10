@@ -7,8 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, GripVertical } from "lucide-react";
 import { format } from "date-fns";
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import { Editor } from '@tinymce/tinymce-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 const ProjectDialog = ({ project, onClose, onUpdate }) => {
@@ -76,11 +75,25 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
             </div>
             <div>
               <label htmlFor="details" className="block text-sm font-medium text-gray-700 mb-1">Details</label>
-              <div className="mb-8">
-                <ReactQuill
+              <div className="mb-4">
+                <Editor
+                  apiKey="your-tinymce-api-key"
                   value={editedProject.details || ''}
-                  onChange={handleDetailsChange}
-                  className="h-40"
+                  onEditorChange={handleDetailsChange}
+                  init={{
+                    height: 300,
+                    menubar: false,
+                    plugins: [
+                      'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                      'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                      'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
+                    ],
+                    toolbar: 'undo redo | blocks | ' +
+                      'bold italic forecolor | alignleft aligncenter ' +
+                      'alignright alignjustify | bullist numlist outdent indent | ' +
+                      'removeformat | help',
+                    content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+                  }}
                 />
               </div>
             </div>

@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import { Editor } from '@tinymce/tinymce-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 const fetchProjects = async () => {
@@ -19,6 +18,7 @@ const fetchProjects = async () => {
 const Dashboard = () => {
   const [notes, setNotes] = useState('');
   const [selectedProject, setSelectedProject] = useState(null);
+  const editorRef = useRef(null);
   const queryClient = useQueryClient();
 
   const { data: projects, isLoading, error } = useQuery({
@@ -37,8 +37,12 @@ const Dashboard = () => {
   });
 
   const handleSaveNotes = () => {
-    // In a real app, this would save the notes to a backend
-    console.log('Saving notes:', notes);
+    if (editorRef.current) {
+      const content = editorRef.current.getContent();
+      // In a real app, this would save the notes to a backend
+      console.log('Saving notes:', content);
+      setNotes(content);
+    }
   };
 
   const currentProjects = projects?.filter(project => project.status === 'In Progress' && project.assignedTo === 'John Doe') || [];
@@ -100,12 +104,25 @@ const Dashboard = () => {
             <CardTitle>Quick Notes</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="mb-8">
-              <ReactQuill 
-                theme="snow" 
-                value={notes} 
-                onChange={setNotes}
-                className="h-64"
+            <div className="mb-4">
+              <Editor
+                apiKey="your-tinymce-api-key"
+                onInit={(evt, editor) => editorRef.current = editor}
+                initialValue={notes}
+                init={{
+                  height: 300,
+                  menubar: false,
+                  plugins: [
+                    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                    'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                    'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
+                  ],
+                  toolbar: 'undo redo | blocks | ' +
+                    'bold italic forecolor | alignleft aligncenter ' +
+                    'alignright alignjustify | bullist numlist outdent indent | ' +
+                    'removeformat | help',
+                  content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+                }}
               />
             </div>
             <Button onClick={handleSaveNotes}>Save Notes</Button>

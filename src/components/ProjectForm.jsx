@@ -8,8 +8,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import { Editor } from '@tinymce/tinymce-react';
 
 const ProjectForm = ({ onClose, onSubmit }) => {
   const { register, handleSubmit, control, formState: { errors } } = useForm();
@@ -37,12 +36,29 @@ const ProjectForm = ({ onClose, onSubmit }) => {
               </div>
               <div>
                 <label htmlFor="details" className="block text-sm font-medium text-gray-700 mb-1">Details</label>
-                <div className="mb-8">
+                <div className="mb-4">
                   <Controller
                     name="details"
                     control={control}
                     render={({ field }) => (
-                      <ReactQuill {...field} className="h-40" />
+                      <Editor
+                        apiKey="your-tinymce-api-key"
+                        onEditorChange={(content) => field.onChange(content)}
+                        init={{
+                          height: 300,
+                          menubar: false,
+                          plugins: [
+                            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                            'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                            'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
+                          ],
+                          toolbar: 'undo redo | blocks | ' +
+                            'bold italic forecolor | alignleft aligncenter ' +
+                            'alignright alignjustify | bullist numlist outdent indent | ' +
+                            'removeformat | help',
+                          content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+                        }}
+                      />
                     )}
                   />
                 </div>
