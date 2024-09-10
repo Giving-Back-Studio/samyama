@@ -59,14 +59,14 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[800px]">
+      <DialogContent className="sm:max-w-[900px]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Edit Project: {project.name}</DialogTitle>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-6 py-4">
           <div className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
               <Input
                 id="name"
                 name="name"
@@ -74,6 +74,52 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
                 onChange={handleInputChange}
               />
             </div>
+            <div>
+              <label htmlFor="details" className="block text-sm font-medium text-gray-700 mb-1">Details</label>
+              <ReactQuill
+                value={editedProject.details}
+                onChange={handleDetailsChange}
+                className="h-40"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Next Actions</label>
+              <DragDropContext onDragEnd={handleNextActionDragEnd}>
+                <Droppable droppableId="next-actions">
+                  {(provided) => (
+                    <ul {...provided.droppableProps} ref={provided.innerRef} className="space-y-2 max-h-40 overflow-y-auto">
+                      {editedProject.nextActions.map((action, index) => (
+                        <Draggable key={index} draggableId={`action-${index}`} index={index}>
+                          {(provided) => (
+                            <li
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className="flex items-center space-x-2 bg-gray-100 p-2 rounded-md"
+                            >
+                              <span {...provided.dragHandleProps}>
+                                <GripVertical className="h-5 w-5 text-gray-500" />
+                              </span>
+                              <Input
+                                value={action}
+                                onChange={(e) => updateNextAction(index, e.target.value)}
+                                className="flex-grow"
+                              />
+                              <Button onClick={() => removeNextAction(index)} variant="destructive" size="sm">
+                                Remove
+                              </Button>
+                            </li>
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </ul>
+                  )}
+                </Droppable>
+              </DragDropContext>
+              <Button onClick={addNextAction} className="mt-2">Add Action</Button>
+            </div>
+          </div>
+          <div className="space-y-4">
             <div>
               <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
               <Select onValueChange={handleStatusChange} defaultValue={editedProject.status}>
@@ -133,52 +179,6 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
                   />
                 </PopoverContent>
               </Popover>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="details" className="block text-sm font-medium text-gray-700 mb-1">Details</label>
-              <ReactQuill
-                value={editedProject.details}
-                onChange={handleDetailsChange}
-                className="h-40"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Next Actions</label>
-              <DragDropContext onDragEnd={handleNextActionDragEnd}>
-                <Droppable droppableId="next-actions">
-                  {(provided) => (
-                    <ul {...provided.droppableProps} ref={provided.innerRef} className="space-y-2 max-h-40 overflow-y-auto">
-                      {editedProject.nextActions.map((action, index) => (
-                        <Draggable key={index} draggableId={`action-${index}`} index={index}>
-                          {(provided) => (
-                            <li
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              className="flex items-center space-x-2 bg-gray-100 p-2 rounded-md"
-                            >
-                              <span {...provided.dragHandleProps}>
-                                <GripVertical className="h-5 w-5 text-gray-500" />
-                              </span>
-                              <Input
-                                value={action}
-                                onChange={(e) => updateNextAction(index, e.target.value)}
-                                className="flex-grow"
-                              />
-                              <Button onClick={() => removeNextAction(index)} variant="destructive" size="sm">
-                                Remove
-                              </Button>
-                            </li>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                    </ul>
-                  )}
-                </Droppable>
-              </DragDropContext>
-              <Button onClick={addNextAction} className="mt-2">Add Action</Button>
             </div>
           </div>
         </div>
