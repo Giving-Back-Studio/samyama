@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, ArrowRight, GripVertical } from "lucide-react";
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 
-const ProjectList = ({ projects, status, openProject, setOpenProject, toggleActionCompletion }) => {
+const ProjectList = ({ projects, status, openProject, setOpenProject, toggleActionCompletion, onViewDetails }) => {
   const filteredProjects = projects.filter(project => project.status === status);
 
   return (
@@ -45,6 +45,14 @@ const ProjectList = ({ projects, status, openProject, setOpenProject, toggleActi
                                   Mark as in progress
                                 </Button>
                               )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => { e.stopPropagation(); onViewDetails(project); }}
+                                className="text-xs md:text-sm"
+                              >
+                                View Details
+                              </Button>
                             </div>
                           </div>
                         </AccordionTrigger>

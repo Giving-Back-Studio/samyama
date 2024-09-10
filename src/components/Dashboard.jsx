@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { DragDropContext } from '@hello-pangea/dnd';
 import ProjectList from './ProjectList';
 import ActivityList from './ActivityList';
+import ProjectDialog from './ProjectDialog';
 
 const fetchProjects = async () => {
   // Mock function to fetch projects
@@ -35,6 +36,7 @@ const fetchEnterpriseActivity = async () => {
 
 const Dashboard = () => {
   const [openProject, setOpenProject] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: projects, isLoading: isLoadingProjects, error: projectsError } = useQuery({
@@ -99,6 +101,15 @@ const Dashboard = () => {
     updateProjectMutation.mutate(updatedProjects);
   };
 
+  const handleViewDetails = (project) => {
+    setSelectedProject(project);
+  };
+
+  const handleUpdateProject = (updatedProject) => {
+    updateProjectMutation.mutate(updatedProject);
+    setSelectedProject(null);
+  };
+
   if (isLoadingProjects || isLoadingActivities) {
     return <div className="p-4 md:p-8">Loading dashboard...</div>;
   }
@@ -114,7 +125,9 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>My Projects</CardTitle>
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-left">My Projects</CardTitle>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <ProjectList
@@ -123,6 +136,7 @@ const Dashboard = () => {
                 openProject={openProject}
                 setOpenProject={setOpenProject}
                 toggleActionCompletion={toggleActionCompletion}
+                onViewDetails={handleViewDetails}
               />
               <ProjectList
                 projects={projects}
@@ -130,12 +144,20 @@ const Dashboard = () => {
                 openProject={openProject}
                 setOpenProject={setOpenProject}
                 toggleActionCompletion={toggleActionCompletion}
+                onViewDetails={handleViewDetails}
               />
             </CardContent>
           </Card>
           <ActivityList activities={activities} />
         </div>
       </DragDropContext>
+      {selectedProject && (
+        <ProjectDialog
+          project={selectedProject}
+          onClose={() => setSelectedProject(null)}
+          onUpdate={handleUpdateProject}
+        />
+      )}
     </div>
   );
 };
