@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { CheckCircle, ChevronDown, ChevronRight, ArrowRight } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { CheckCircle, ArrowRight } from "lucide-react";
 
 const fetchProjects = async () => {
   // Mock function to fetch projects
@@ -24,7 +24,7 @@ const fetchEnterpriseActivity = async () => {
 };
 
 const Dashboard = () => {
-  const [openProjects, setOpenProjects] = useState({});
+  const [openProject, setOpenProject] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: projects, isLoading: isLoadingProjects, error: projectsError } = useQuery({
@@ -48,7 +48,7 @@ const Dashboard = () => {
   });
 
   const toggleProject = (projectId) => {
-    setOpenProjects(prev => ({ ...prev, [projectId]: !prev[projectId] }));
+    setOpenProject(openProject === projectId ? null : projectId);
   };
 
   const markProjectComplete = (projectId) => {
@@ -62,105 +62,96 @@ const Dashboard = () => {
   const renderProjects = (status) => {
     if (!projects || projects.length === 0) return null;
     const filteredProjects = projects.filter(project => project.status === status);
-    if (filteredProjects.length === 0) return <p>No {status} projects</p>;
+    if (filteredProjects.length === 0) return <p className="text-gray-500">No {status} projects</p>;
 
-    return filteredProjects.map(project => (
-      <Card key={project.id} className="mb-4">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            {project.name}
-          </CardTitle>
-          <div className="flex items-center space-x-2">
-            {status === 'In Progress' ? (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => markProjectComplete(project.id)}
-              >
-                <CheckCircle className="h-4 w-4" />
-              </Button>
-            ) : (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => moveProjectToInProgress(project.id)}
-              >
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            )}
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => toggleProject(project.id)}
-            >
-              {openProjects[project.id] ? (
-                <ChevronDown className="h-4 w-4" />
-              ) : (
-                <ChevronRight className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-        </CardHeader>
-        <Collapsible open={openProjects[project.id]}>
-          <CollapsibleContent>
-            <CardContent>
-              <ul className="list-disc list-inside">
+    return (
+      <Accordion type="single" collapsible value={openProject} onValueChange={toggleProject}>
+        {filteredProjects.map(project => (
+          <AccordionItem key={project.id} value={project.id.toString()}>
+            <AccordionTrigger className="hover:no-underline">
+              <div className="flex items-center justify-between w-full">
+                <span>{project.name}</span>
+                <div className="flex items-center space-x-2">
+                  {status === 'In Progress' ? (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={(e) => { e.stopPropagation(); markProjectComplete(project.id); }}
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={(e) => { e.stopPropagation(); moveProjectToInProgress(project.id); }}
+                    >
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <ul className="list-disc list-inside pl-4">
                 {project.nextActions && project.nextActions.map((action, index) => (
                   <li key={index} className="text-sm">{action}</li>
                 ))}
               </ul>
-            </CardContent>
-          </CollapsibleContent>
-        </Collapsible>
-      </Card>
-    ));
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    );
   };
 
   if (isLoadingProjects || isLoadingActivities) {
-    return <div>Loading dashboard...</div>;
+    return <div className="p-4">Loading dashboard...</div>;
   }
 
   if (projectsError || activitiesError) {
-    return <div>Error loading dashboard data: {projectsError?.message || activitiesError?.message}</div>;
+    return <div className="p-4">Error loading dashboard data: {projectsError?.message || activitiesError?.message}</div>;
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 max-w-3xl mx-auto">
       <h1 className="text-3xl font-bold">Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>My Projects</CardTitle>
-          </CardHeader>
-          <CardContent>
+      <Card>
+        <CardHeader>
+          <CardTitle>My Projects</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
             <h3 className="text-lg font-semibold mb-2">In Progress</h3>
             {renderProjects('In Progress')}
-            <h3 className="text-lg font-semibold mb-2 mt-4">To Do</h3>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold mb-2">To Do</h3>
             {renderProjects('To Do')}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Enterprise Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {activities && activities.length > 0 ? (
-              <ul className="space-y-2">
-                {activities.map(activity => (
-                  <li key={activity.id} className="flex justify-between items-center">
-                    <span>{activity.description}</span>
-                    <span className="text-sm text-gray-500">
-                      {new Date(activity.timestamp).toLocaleString()}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>No recent activity</p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Enterprise Activity</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {activities && activities.length > 0 ? (
+            <ul className="space-y-2">
+              {activities.map(activity => (
+                <li key={activity.id} className="flex justify-between items-center border-b pb-2">
+                  <span>{activity.description}</span>
+                  <span className="text-sm text-gray-500">
+                    {new Date(activity.timestamp).toLocaleString()}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-500">No recent activity</p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
