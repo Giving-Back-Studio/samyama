@@ -31,7 +31,7 @@ const ProjectCalendar = ({ projects }) => {
           DayContent: (props) => (
             <>
               {props.day.getDate()}
-              {renderDay(props.day)}
+              {renderDay(props.date)}
             </>
           ),
         }}

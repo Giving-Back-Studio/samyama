@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const ProjectBoard = ({ projects }) => {
+const ProjectBoard = ({ projects, onProjectClick }) => {
   const columns = ['To Do', 'In Progress', 'Done'];
 
   return (
@@ -16,7 +16,11 @@ const ProjectBoard = ({ projects }) => {
               {projects
                 .filter(project => project.status === column)
                 .map(project => (
-                  <li key={project.id} className="bg-white p-2 rounded shadow">
+                  <li 
+                    key={project.id} 
+                    className="bg-white p-2 rounded shadow cursor-pointer hover:bg-gray-100"
+                    onClick={() => onProjectClick(project)}
+                  >
                     {project.name}
                   </li>
                 ))}
