@@ -1,3 +1,4 @@
+import React from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
@@ -21,31 +22,33 @@ import Contacts from "./components/Contacts";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="projects" element={<Projects />} />
-            <Route path="plants" element={<Plants />} />
-            <Route path="plant-locations" element={<PlantLocations />} />
-            <Route path="transactions" element={<Transactions />} />
-            <Route path="pl-statement" element={<PLStatement />} />
-            <Route path="cash-flow" element={<CashFlow />} />
-            <Route path="balance-sheet" element={<BalanceSheet />} />
-            <Route path="budgeting" element={<Budgeting />} />
-            <Route path="market-dashboard" element={<MarketDashboard />} />
-            <Route path="products" element={<Products />} />
-            <Route path="online-store" element={<OnlineStore />} />
-            <Route path="pickup-locations" element={<PickupLocations />} />
-            <Route path="contacts" element={<Contacts />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="projects" element={<Projects />} />
+              <Route path="plants" element={<Plants />} />
+              <Route path="plant-locations" element={<PlantLocations />} />
+              <Route path="transactions" element={<Transactions />} />
+              <Route path="pl-statement" element={<PLStatement />} />
+              <Route path="cash-flow" element={<CashFlow />} />
+              <Route path="balance-sheet" element={<BalanceSheet />} />
+              <Route path="budgeting" element={<Budgeting />} />
+              <Route path="market-dashboard" element={<MarketDashboard />} />
+              <Route path="products" element={<Products />} />
+              <Route path="online-store" element={<OnlineStore />} />
+              <Route path="pickup-locations" element={<PickupLocations />} />
+              <Route path="contacts" element={<Contacts />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </React.StrictMode>
 );
 
 export default App;
