@@ -21,6 +21,8 @@ const fetchProjects = async () => {
 const Dashboard = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [openSections, setOpenSections] = useState({
+    myProjects: true,
+    enterpriseActivity: true,
     inProgress: true,
     toDo: true,
     tasks: true,
@@ -81,29 +83,41 @@ const Dashboard = () => {
       <h1 className="text-3xl font-bold">Dashboard</h1>
       <div className="space-y-4">
         {renderCollapsibleSection(
-          "In Progress Projects",
-          renderProjects('In Progress'),
-          'inProgress'
+          "My Projects",
+          <div className="space-y-4">
+            {renderCollapsibleSection(
+              "In Progress Projects",
+              renderProjects('In Progress'),
+              'inProgress'
+            )}
+            {renderCollapsibleSection(
+              "To Do Projects",
+              renderProjects('To Do'),
+              'toDo'
+            )}
+          </div>,
+          'myProjects'
         )}
         {renderCollapsibleSection(
-          "To Do Projects",
-          renderProjects('To Do'),
-          'toDo'
-        )}
-        {renderCollapsibleSection(
-          "Tasks",
-          <TaskList fullView={true} />,
-          'tasks'
-        )}
-        {renderCollapsibleSection(
-          "Weather",
-          <WeatherWidget />,
-          'weather'
-        )}
-        {renderCollapsibleSection(
-          "Crop Planner",
-          <CropPlanner />,
-          'cropPlanner'
+          "Enterprise Activity",
+          <div className="space-y-4">
+            {renderCollapsibleSection(
+              "Tasks",
+              <TaskList fullView={true} />,
+              'tasks'
+            )}
+            {renderCollapsibleSection(
+              "Weather",
+              <WeatherWidget />,
+              'weather'
+            )}
+            {renderCollapsibleSection(
+              "Crop Planner",
+              <CropPlanner />,
+              'cropPlanner'
+            )}
+          </div>,
+          'enterpriseActivity'
         )}
       </div>
       {selectedProject && (
