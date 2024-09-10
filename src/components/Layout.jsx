@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Home, Briefcase, Leaf, DollarSign, ShoppingBag, Users, ChevronDown, ChevronRight, Menu } from 'lucide-react';
+import { Home, Briefcase, Leaf, DollarSign, ShoppingBag, Users, Settings, ChevronDown, ChevronRight, Menu } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -75,6 +75,8 @@ const Layout = () => {
         <NavItem to="/pickup-locations" label="Pickup Locations" currentPath={location.pathname} />
       </NavGroup>
       <NavItem to="/contacts" icon={<Users size={20} />} label="Contacts" currentPath={location.pathname} />
+      <NavItem to="/account-settings" icon={<Settings size={20} />} label="Account Settings" currentPath={location.pathname} />
+      <NavItem to="/user-management" icon={<Users size={20} />} label="User Management" currentPath={location.pathname} />
     </ul>
   );
 

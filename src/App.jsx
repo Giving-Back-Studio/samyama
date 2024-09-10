@@ -19,6 +19,8 @@ import Products from "./components/Products";
 import OnlineStore from "./components/OnlineStore";
 import PickupLocations from "./components/PickupLocations";
 import Contacts from "./components/Contacts";
+import AccountSettings from "./components/AccountSettings";
+import UserManagement from "./components/UserManagement";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +47,8 @@ const App = () => (
               <Route path="online-store" element={<OnlineStore />} />
               <Route path="pickup-locations" element={<PickupLocations />} />
               <Route path="contacts" element={<Contacts />} />
+              <Route path="account-settings" element={<AccountSettings />} />
+              <Route path="user-management" element={<UserManagement />} />
             </Route>
           </Routes>
         </BrowserRouter>
