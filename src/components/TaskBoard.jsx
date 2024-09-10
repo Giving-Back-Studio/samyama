@@ -10,12 +10,15 @@ const initialTasks = {
   todo: [
     { id: 'task-1', content: 'Cucumber in the nursery is planted' },
     { id: 'task-2', content: 'Water tomatoes' },
+    { id: 'task-5', content: 'Train chickens to salsa dance' },
   ],
   inProgress: [
     { id: 'task-3', content: 'Harvest lettuce' },
+    { id: 'task-6', content: 'Teach worms to read Shakespeare' },
   ],
   done: [
     { id: 'task-4', content: 'Compost heap turned' },
+    { id: 'task-7', content: 'Convince carrots to grow square-shaped' },
   ],
 };
 
