@@ -6,21 +6,23 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Calendar } from "@/components/ui/calendar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProjectForm from './ProjectForm';
 import ProjectDialog from './ProjectDialog';
 
 const fetchProjects = async () => {
   // This is a mock function. In a real app, you'd fetch projects from an API.
   return [
-    { id: 1, name: 'Spring Planting', status: 'To Do', startDate: '2024-03-01', endDate: '2024-05-01', assignedTo: 'John Doe', details: 'Prepare and plant spring crops', nextActions: ['Buy seeds', 'Prepare soil', 'Set up irrigation'] },
-    { id: 2, name: 'Irrigation System Upgrade', status: 'In Progress', startDate: '2024-04-01', endDate: '2024-06-15', assignedTo: 'Jane Smith', details: 'Upgrade the farm\'s irrigation system', nextActions: ['Research new systems', 'Get quotes', 'Schedule installation'] },
-    { id: 3, name: 'Harvest Planning', status: 'Done', startDate: '2024-02-01', endDate: '2024-07-01', assignedTo: 'Bob Johnson', details: 'Plan for summer harvest', nextActions: ['Review crop yields', 'Schedule labor', 'Prepare storage'] },
+    { id: 1, name: 'Spring Planting', status: 'To Do', startDate: '2024-03-01', endDate: '2024-05-01', assignedTo: 'John Doe', details: 'Prepare and plant spring crops', nextActions: ['Buy seeds', 'Prepare soil', 'Set up irrigation'], createdAt: '2024-02-15' },
+    { id: 2, name: 'Irrigation System Upgrade', status: 'In Progress', startDate: '2024-04-01', endDate: '2024-06-15', assignedTo: 'Jane Smith', details: 'Upgrade the farm\'s irrigation system', nextActions: ['Research new systems', 'Get quotes', 'Schedule installation'], createdAt: '2024-03-01' },
+    { id: 3, name: 'Harvest Planning', status: 'Done', startDate: '2024-02-01', endDate: '2024-07-01', assignedTo: 'Bob Johnson', details: 'Plan for summer harvest', nextActions: ['Review crop yields', 'Schedule labor', 'Prepare storage'], createdAt: '2024-01-20' },
   ];
 };
 
 const Projects = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [sortBy, setSortBy] = useState('createdAt');
   const queryClient = useQueryClient();
 
   const { data: projects, isLoading, error } = useQuery({
@@ -31,7 +33,7 @@ const Projects = () => {
   const addProjectMutation = useMutation({
     mutationFn: (newProject) => {
       // This is a mock function. In a real app, you'd send a POST request to your API.
-      return Promise.resolve({ id: Date.now(), ...newProject });
+      return Promise.resolve({ id: Date.now(), ...newProject, createdAt: new Date().toISOString() });
     },
     onSuccess: () => {
       queryClient.invalidateQueries('projects');
@@ -70,6 +72,17 @@ const Projects = () => {
     setSelectedProject(project);
   };
 
+  const sortedProjects = [...projects].sort((a, b) => {
+    if (sortBy === 'createdAt') {
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    } else if (sortBy === 'startDate') {
+      return new Date(a.startDate) - new Date(b.startDate);
+    } else if (sortBy === 'endDate') {
+      return new Date(a.endDate) - new Date(b.endDate);
+    }
+    return 0;
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -85,7 +98,19 @@ const Projects = () => {
         <TabsContent value="list">
           <Card>
             <CardHeader>
-              <CardTitle>Project List</CardTitle>
+              <CardTitle className="flex justify-between items-center">
+                <span>Project List</span>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="createdAt">Creation Date</SelectItem>
+                    <SelectItem value="startDate">Start Date</SelectItem>
+                    <SelectItem value="endDate">End Date</SelectItem>
+                  </SelectContent>
+                </Select>
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
@@ -99,7 +124,7 @@ const Projects = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {projects.map((project) => (
+                  {sortedProjects.map((project) => (
                     <TableRow key={project.id} onClick={() => handleProjectClick(project)} className="cursor-pointer hover:bg-gray-100">
                       <TableCell>{project.name}</TableCell>
                       <TableCell>{project.status}</TableCell>
@@ -129,7 +154,7 @@ const Projects = () => {
                           ref={provided.innerRef}
                           className="space-y-2"
                         >
-                          {projects
+                          {sortedProjects
                             .filter((project) => project.status === column)
                             .map((project, index) => (
                               <Draggable key={project.id} draggableId={project.id.toString()} index={index}>
