@@ -15,7 +15,7 @@ const Layout = () => {
 
   const isPathInGroup = (path, group) => {
     const groupPaths = {
-      plantTrackers: ['/plants', '/plant-locations'],
+      plantTrackers: ['/plants', '/plant-locations', '/plantings'],
       accounting: ['/transactions', '/pl-statement', '/cash-flow', '/balance-sheet', '/budgeting'],
       market: ['/market-dashboard', '/products', '/online-store', '/pickup-locations'],
     };
@@ -47,8 +47,9 @@ const Layout = () => {
             onClick={() => toggleGroup('plantTrackers', '/plants')}
             currentPath={location.pathname}
           >
-            <NavItem to="/plants" label="My Plants" currentPath={location.pathname} />
+            <NavItem to="/plants" label="Plant Varieties" currentPath={location.pathname} />
             <NavItem to="/plant-locations" label="Plant Locations" currentPath={location.pathname} />
+            <NavItem to="/plantings" label="Plantings" currentPath={location.pathname} />
           </NavGroup>
           <NavGroup
             icon={<DollarSign size={20} />}

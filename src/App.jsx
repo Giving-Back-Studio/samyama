@@ -8,6 +8,7 @@ import Dashboard from "./components/Dashboard";
 import Projects from "./components/Projects";
 import Plants from "./components/Plants";
 import PlantLocations from "./components/PlantLocations";
+import Plantings from "./components/Plantings";
 import Transactions from "./components/Transactions";
 import PLStatement from "./components/PLStatement";
 import CashFlow from "./components/CashFlow";
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="projects" element={<Projects />} />
               <Route path="plants" element={<Plants />} />
               <Route path="plant-locations" element={<PlantLocations />} />
+              <Route path="plantings" element={<Plantings />} />
               <Route path="transactions" element={<Transactions />} />
               <Route path="pl-statement" element={<PLStatement />} />
               <Route path="cash-flow" element={<CashFlow />} />
