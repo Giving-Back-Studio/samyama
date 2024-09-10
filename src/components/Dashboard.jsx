@@ -5,6 +5,7 @@ import { DragDropContext } from '@hello-pangea/dnd';
 import ProjectList from './ProjectList';
 import ActivityList from './ActivityList';
 import ProjectDialog from './ProjectDialog';
+import NoteWidget from './NoteWidget';
 
 const fetchProjects = async () => {
   // Mock function to fetch projects
@@ -120,34 +121,37 @@ const Dashboard = () => {
   return (
     <div className="space-y-6 p-4">
       <h1 className="text-2xl font-bold">Dashboard</h1>
-      <DragDropContext onDragEnd={onDragEnd}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-left">My Projects</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <ProjectList
-                projects={projects}
-                status="In Progress"
-                openProject={openProject}
-                setOpenProject={setOpenProject}
-                toggleActionCompletion={toggleActionCompletion}
-                onViewDetails={handleViewDetails}
-              />
-              <ProjectList
-                projects={projects}
-                status="To Do"
-                openProject={openProject}
-                setOpenProject={setOpenProject}
-                toggleActionCompletion={toggleActionCompletion}
-                onViewDetails={handleViewDetails}
-              />
-            </CardContent>
-          </Card>
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-left">My Projects</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <ProjectList
+                  projects={projects}
+                  status="In Progress"
+                  openProject={openProject}
+                  setOpenProject={setOpenProject}
+                  toggleActionCompletion={toggleActionCompletion}
+                  onViewDetails={handleViewDetails}
+                />
+                <ProjectList
+                  projects={projects}
+                  status="To Do"
+                  openProject={openProject}
+                  setOpenProject={setOpenProject}
+                  toggleActionCompletion={toggleActionCompletion}
+                  onViewDetails={handleViewDetails}
+                />
+              </CardContent>
+            </Card>
+          </DragDropContext>
           <ActivityList activities={activities} />
         </div>
-      </DragDropContext>
+        <NoteWidget />
+      </div>
       {selectedProject && (
         <ProjectDialog
           project={selectedProject}
