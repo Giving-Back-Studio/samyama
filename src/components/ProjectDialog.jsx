@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon, GripVertical } from "lucide-react";
 import { format } from "date-fns";
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const ProjectDialog = ({ project, onClose, onUpdate }) => {
   const [editedProject, setEditedProject] = useState(project);
@@ -16,6 +17,10 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEditedProject((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleDetailsChange = (content) => {
+    setEditedProject((prev) => ({ ...prev, details: content }));
   };
 
   const handleStatusChange = (value) => {
@@ -54,107 +59,97 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Edit Project: {project.name}</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-6 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="name" className="text-right font-medium">
-              Name
-            </label>
-            <Input
-              id="name"
-              name="name"
-              value={editedProject.name}
-              onChange={handleInputChange}
-              className="col-span-3"
-            />
+        <div className="grid grid-cols-2 gap-6 py-4">
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+              <Input
+                id="name"
+                name="name"
+                value={editedProject.name}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div>
+              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <Select onValueChange={handleStatusChange} defaultValue={editedProject.status}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="To Do">To Do</SelectItem>
+                  <SelectItem value="In Progress">In Progress</SelectItem>
+                  <SelectItem value="Done">Done</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label htmlFor="assignedTo" className="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
+              <Input
+                id="assignedTo"
+                name="assignedTo"
+                value={editedProject.assignedTo}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start text-left font-normal">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {editedProject.startDate ? format(new Date(editedProject.startDate), 'PPP') : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={new Date(editedProject.startDate)}
+                    onSelect={(date) => handleDateChange(date, 'startDate')}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-start text-left font-normal">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {editedProject.endDate ? format(new Date(editedProject.endDate), 'PPP') : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={new Date(editedProject.endDate)}
+                    onSelect={(date) => handleDateChange(date, 'endDate')}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
-          <div className="grid grid-cols-4 items-start gap-4">
-            <label htmlFor="details" className="text-right font-medium">
-              Details
-            </label>
-            <Textarea
-              id="details"
-              name="details"
-              value={editedProject.details}
-              onChange={handleInputChange}
-              className="col-span-3 min-h-[100px]"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="status" className="text-right font-medium">
-              Status
-            </label>
-            <Select onValueChange={handleStatusChange} defaultValue={editedProject.status}>
-              <SelectTrigger className="col-span-3">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="To Do">To Do</SelectItem>
-                <SelectItem value="In Progress">In Progress</SelectItem>
-                <SelectItem value="Done">Done</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="assignedTo" className="text-right font-medium">
-              Assigned To
-            </label>
-            <Input
-              id="assignedTo"
-              name="assignedTo"
-              value={editedProject.assignedTo}
-              onChange={handleInputChange}
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label className="text-right font-medium">Start Date</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="col-span-3 justify-start text-left font-normal">
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {editedProject.startDate ? format(new Date(editedProject.startDate), 'PPP') : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={new Date(editedProject.startDate)}
-                  onSelect={(date) => handleDateChange(date, 'startDate')}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label className="text-right font-medium">End Date</label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="col-span-3 justify-start text-left font-normal">
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {editedProject.endDate ? format(new Date(editedProject.endDate), 'PPP') : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={new Date(editedProject.endDate)}
-                  onSelect={(date) => handleDateChange(date, 'endDate')}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          <div className="grid grid-cols-4 items-start gap-4">
-            <label className="text-right font-medium">Next Actions</label>
-            <div className="col-span-3">
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="details" className="block text-sm font-medium text-gray-700 mb-1">Details</label>
+              <ReactQuill
+                value={editedProject.details}
+                onChange={handleDetailsChange}
+                className="h-40"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Next Actions</label>
               <DragDropContext onDragEnd={handleNextActionDragEnd}>
                 <Droppable droppableId="next-actions">
                   {(provided) => (
-                    <ul {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                    <ul {...provided.droppableProps} ref={provided.innerRef} className="space-y-2 max-h-40 overflow-y-auto">
                       {editedProject.nextActions.map((action, index) => (
                         <Draggable key={index} draggableId={`action-${index}`} index={index}>
                           {(provided) => (
