@@ -7,6 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { CheckCircle, ArrowUp, ArrowDown } from "lucide-react";
 import ProjectForm from './ProjectForm';
 import ProjectDialog from './ProjectDialog';
+import ProjectBoard from './ProjectBoard';
+import ProjectCalendar from './ProjectCalendar';
 
 const fetchProjects = async () => {
   // Mock function to fetch projects
@@ -21,7 +23,8 @@ const Projects = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'ascending' });
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeView, setActiveView] = useState('list');
+  const [listFilter, setListFilter] = useState('all');
   const queryClient = useQueryClient();
 
   const { data: projects, isLoading, error } = useQuery({
@@ -73,11 +76,11 @@ const Projects = () => {
   }, [projects, sortConfig]);
 
   const filteredProjects = useMemo(() => {
-    if (activeTab === 'all') return sortedProjects;
+    if (listFilter === 'all') return sortedProjects;
     return sortedProjects.filter(project => 
-      activeTab === 'completed' ? project.completed : !project.completed
+      listFilter === 'completed' ? project.completed : !project.completed
     );
-  }, [sortedProjects, activeTab]);
+  }, [sortedProjects, listFilter]);
 
   const handleSort = (key) => {
     setSortConfig(prevConfig => ({
@@ -102,16 +105,36 @@ const Projects = () => {
         <h1 className="text-3xl font-bold">Projects</h1>
         <Button onClick={() => setIsFormOpen(true)}>Add Project</Button>
       </div>
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeView} onValueChange={setActiveView}>
         <TabsList>
-          <TabsTrigger value="all">All Projects</TabsTrigger>
-          <TabsTrigger value="active">Active Projects</TabsTrigger>
-          <TabsTrigger value="completed">Completed Projects</TabsTrigger>
+          <TabsTrigger value="list">List</TabsTrigger>
+          <TabsTrigger value="board">Board</TabsTrigger>
+          <TabsTrigger value="calendar">Calendar</TabsTrigger>
         </TabsList>
-        <TabsContent value={activeTab}>
+        <TabsContent value="list">
           <Card>
             <CardHeader>
               <CardTitle>Project List</CardTitle>
+              <div className="flex space-x-2">
+                <Button 
+                  variant={listFilter === 'all' ? 'secondary' : 'ghost'} 
+                  onClick={() => setListFilter('all')}
+                >
+                  All
+                </Button>
+                <Button 
+                  variant={listFilter === 'active' ? 'secondary' : 'ghost'} 
+                  onClick={() => setListFilter('active')}
+                >
+                  Active
+                </Button>
+                <Button 
+                  variant={listFilter === 'completed' ? 'secondary' : 'ghost'} 
+                  onClick={() => setListFilter('completed')}
+                >
+                  Completed
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <Table>
@@ -158,6 +181,12 @@ const Projects = () => {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+        <TabsContent value="board">
+          <ProjectBoard projects={projects} />
+        </TabsContent>
+        <TabsContent value="calendar">
+          <ProjectCalendar projects={projects} />
         </TabsContent>
       </Tabs>
       {isFormOpen && (
