@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, ArrowRight, GripVertical } from "lucide-react";
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { DragDropContext } from '@hello-pangea/dnd';
 import ProjectList from './ProjectList';
 import ActivityList from './ActivityList';
 
@@ -102,40 +100,42 @@ const Dashboard = () => {
   };
 
   if (isLoadingProjects || isLoadingActivities) {
-    return <div className="p-4">Loading dashboard...</div>;
+    return <div className="p-4 md:p-8">Loading dashboard...</div>;
   }
 
   if (projectsError || activitiesError) {
-    return <div className="p-4">Error loading dashboard data: {projectsError?.message || activitiesError?.message}</div>;
+    return <div className="p-4 md:p-8">Error loading dashboard data: {projectsError?.message || activitiesError?.message}</div>;
   }
 
   return (
-    <div className="space-y-6 p-4 max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold">Dashboard</h1>
+    <div className="space-y-6 p-4 md:p-8">
+      <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
       <DragDropContext onDragEnd={onDragEnd}>
-        <Card>
-          <CardHeader>
-            <CardTitle>My Projects</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ProjectList
-              projects={projects}
-              status="In Progress"
-              openProject={openProject}
-              setOpenProject={setOpenProject}
-              toggleActionCompletion={toggleActionCompletion}
-            />
-            <ProjectList
-              projects={projects}
-              status="To Do"
-              openProject={openProject}
-              setOpenProject={setOpenProject}
-              toggleActionCompletion={toggleActionCompletion}
-            />
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>My Projects</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ProjectList
+                projects={projects}
+                status="In Progress"
+                openProject={openProject}
+                setOpenProject={setOpenProject}
+                toggleActionCompletion={toggleActionCompletion}
+              />
+              <ProjectList
+                projects={projects}
+                status="To Do"
+                openProject={openProject}
+                setOpenProject={setOpenProject}
+                toggleActionCompletion={toggleActionCompletion}
+              />
+            </CardContent>
+          </Card>
+          <ActivityList activities={activities} />
+        </div>
       </DragDropContext>
-      <ActivityList activities={activities} />
     </div>
   );
 };

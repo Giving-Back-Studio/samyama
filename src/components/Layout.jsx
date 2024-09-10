@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Home, Briefcase, Leaf, DollarSign, ShoppingBag, Users, ChevronDown, ChevronRight } from 'lucide-react';
+import { Home, Briefcase, Leaf, DollarSign, ShoppingBag, Users, ChevronDown, ChevronRight, Menu } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [openGroup, setOpenGroup] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const isGroupOpen = (group) => {
     return openGroup === group || isPathInGroup(location.pathname, group);
@@ -31,55 +34,76 @@ const Layout = () => {
     }
   };
 
+  const NavContent = () => (
+    <ul className="space-y-2 p-4">
+      <NavItem to="/" icon={<Home size={20} />} label="Home" currentPath={location.pathname} />
+      <NavItem to="/projects" icon={<Briefcase size={20} />} label="Projects" currentPath={location.pathname} />
+      <NavGroup
+        icon={<Leaf size={20} />}
+        label="Plant Trackers"
+        isOpen={isGroupOpen('plantTrackers')}
+        onClick={() => toggleGroup('plantTrackers', '/plants')}
+        currentPath={location.pathname}
+      >
+        <NavItem to="/plants" label="Plant Varieties" currentPath={location.pathname} />
+        <NavItem to="/plant-locations" label="Plant Locations" currentPath={location.pathname} />
+        <NavItem to="/plantings" label="Plantings" currentPath={location.pathname} />
+      </NavGroup>
+      <NavGroup
+        icon={<DollarSign size={20} />}
+        label="Accounting"
+        isOpen={isGroupOpen('accounting')}
+        onClick={() => toggleGroup('accounting', '/transactions')}
+        currentPath={location.pathname}
+      >
+        <NavItem to="/transactions" label="Transactions" currentPath={location.pathname} />
+        <NavItem to="/pl-statement" label="P&L Statement" currentPath={location.pathname} />
+        <NavItem to="/cash-flow" label="Cash Flow" currentPath={location.pathname} />
+        <NavItem to="/balance-sheet" label="Balance Sheet" currentPath={location.pathname} />
+        <NavItem to="/budgeting" label="Budgeting" currentPath={location.pathname} />
+      </NavGroup>
+      <NavGroup
+        icon={<ShoppingBag size={20} />}
+        label="Market"
+        isOpen={isGroupOpen('market')}
+        onClick={() => toggleGroup('market', '/market-dashboard')}
+        currentPath={location.pathname}
+      >
+        <NavItem to="/market-dashboard" label="Dashboard" currentPath={location.pathname} />
+        <NavItem to="/products" label="Products" currentPath={location.pathname} />
+        <NavItem to="/online-store" label="Online Store" currentPath={location.pathname} />
+        <NavItem to="/pickup-locations" label="Pickup Locations" currentPath={location.pathname} />
+      </NavGroup>
+      <NavItem to="/contacts" icon={<Users size={20} />} label="Contacts" currentPath={location.pathname} />
+    </ul>
+  );
+
   return (
     <div className="flex h-screen bg-gray-100">
-      <nav className="w-64 bg-white shadow-md">
+      {/* Desktop Sidebar */}
+      <nav className="hidden md:block w-64 bg-white shadow-md">
         <div className="p-4">
           <h1 className="text-2xl font-bold text-green-600">Samyama</h1>
         </div>
-        <ul className="space-y-2 p-4">
-          <NavItem to="/" icon={<Home size={20} />} label="Home" currentPath={location.pathname} />
-          <NavItem to="/projects" icon={<Briefcase size={20} />} label="Projects" currentPath={location.pathname} />
-          <NavGroup
-            icon={<Leaf size={20} />}
-            label="Plant Trackers"
-            isOpen={isGroupOpen('plantTrackers')}
-            onClick={() => toggleGroup('plantTrackers', '/plants')}
-            currentPath={location.pathname}
-          >
-            <NavItem to="/plants" label="Plant Varieties" currentPath={location.pathname} />
-            <NavItem to="/plant-locations" label="Plant Locations" currentPath={location.pathname} />
-            <NavItem to="/plantings" label="Plantings" currentPath={location.pathname} />
-          </NavGroup>
-          <NavGroup
-            icon={<DollarSign size={20} />}
-            label="Accounting"
-            isOpen={isGroupOpen('accounting')}
-            onClick={() => toggleGroup('accounting', '/transactions')}
-            currentPath={location.pathname}
-          >
-            <NavItem to="/transactions" label="Transactions" currentPath={location.pathname} />
-            <NavItem to="/pl-statement" label="P&L Statement" currentPath={location.pathname} />
-            <NavItem to="/cash-flow" label="Cash Flow" currentPath={location.pathname} />
-            <NavItem to="/balance-sheet" label="Balance Sheet" currentPath={location.pathname} />
-            <NavItem to="/budgeting" label="Budgeting" currentPath={location.pathname} />
-          </NavGroup>
-          <NavGroup
-            icon={<ShoppingBag size={20} />}
-            label="Market"
-            isOpen={isGroupOpen('market')}
-            onClick={() => toggleGroup('market', '/market-dashboard')}
-            currentPath={location.pathname}
-          >
-            <NavItem to="/market-dashboard" label="Dashboard" currentPath={location.pathname} />
-            <NavItem to="/products" label="Products" currentPath={location.pathname} />
-            <NavItem to="/online-store" label="Online Store" currentPath={location.pathname} />
-            <NavItem to="/pickup-locations" label="Pickup Locations" currentPath={location.pathname} />
-          </NavGroup>
-          <NavItem to="/contacts" icon={<Users size={20} />} label="Contacts" currentPath={location.pathname} />
-        </ul>
+        <NavContent />
       </nav>
-      <main className="flex-1 overflow-y-auto p-8">
+
+      {/* Mobile Menu */}
+      <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+        <SheetTrigger asChild>
+          <Button variant="outline" size="icon" className="md:hidden fixed top-4 left-4 z-50">
+            <Menu className="h-6 w-6" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="w-64 p-0">
+          <div className="p-4">
+            <h1 className="text-2xl font-bold text-green-600">Samyama</h1>
+          </div>
+          <NavContent />
+        </SheetContent>
+      </Sheet>
+
+      <main className="flex-1 overflow-y-auto p-4 md:p-8">
         <Outlet />
       </main>
     </div>

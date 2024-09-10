@@ -22,13 +22,14 @@ const ProjectList = ({ projects, status, openProject, setOpenProject, toggleActi
                         <AccordionTrigger className="hover:no-underline">
                           <div className="flex items-center justify-between w-full">
                             <span {...provided.dragHandleProps}><GripVertical className="inline mr-2" /></span>
-                            <span>{project.name}</span>
+                            <span className="text-sm md:text-base">{project.name}</span>
                             <div className="flex items-center space-x-2">
                               {status === 'In Progress' ? (
                                 <Button 
                                   variant="ghost" 
                                   size="sm" 
                                   onClick={(e) => { e.stopPropagation(); /* Mark as complete logic */ }}
+                                  className="text-xs md:text-sm"
                                 >
                                   <CheckCircle className="h-4 w-4 mr-1" />
                                   Mark as complete
@@ -38,6 +39,7 @@ const ProjectList = ({ projects, status, openProject, setOpenProject, toggleActi
                                   variant="ghost" 
                                   size="sm" 
                                   onClick={(e) => { e.stopPropagation(); /* Mark as in progress logic */ }}
+                                  className="text-xs md:text-sm"
                                 >
                                   <ArrowRight className="h-4 w-4 mr-1" />
                                   Mark as in progress
@@ -70,7 +72,7 @@ const ProjectList = ({ projects, status, openProject, setOpenProject, toggleActi
                                         >
                                           <CheckCircle className={`h-4 w-4 ${action.completed ? 'text-green-500' : 'text-gray-300'}`} />
                                         </Button>
-                                        <span className={action.completed ? 'line-through text-gray-500' : ''}>{action.content}</span>
+                                        <span className={`text-xs md:text-sm ${action.completed ? 'line-through text-gray-500' : ''}`}>{action.content}</span>
                                       </li>
                                     )}
                                   </Draggable>
