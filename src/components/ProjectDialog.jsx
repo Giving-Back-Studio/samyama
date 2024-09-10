@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, GripVertical } from "lucide-react";
 import { format } from "date-fns";
 import ReactQuill from 'react-quill';
@@ -11,7 +12,7 @@ import 'react-quill/dist/quill.snow.css';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 const ProjectDialog = ({ project, onClose, onUpdate }) => {
-  const [editedProject, setEditedProject] = useState(project);
+  const [editedProject, setEditedProject] = useState(project || {});
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -60,7 +61,7 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[900px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">Edit Project: {project.name}</DialogTitle>
+          <DialogTitle className="text-2xl font-bold">Edit Project: {editedProject.name}</DialogTitle>
         </DialogHeader>
         <div className="grid grid-cols-3 gap-6 py-4">
           <div className="col-span-2 space-y-6">
@@ -69,7 +70,7 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
               <Input
                 id="name"
                 name="name"
-                value={editedProject.name}
+                value={editedProject.name || ''}
                 onChange={handleInputChange}
               />
             </div>
