@@ -100,12 +100,14 @@ const Dashboard = () => {
             <CardTitle>Quick Notes</CardTitle>
           </CardHeader>
           <CardContent>
-            <ReactQuill 
-              theme="snow" 
-              value={notes} 
-              onChange={setNotes}
-              className="h-64 mb-4"
-            />
+            <div className="mb-8">
+              <ReactQuill 
+                theme="snow" 
+                value={notes} 
+                onChange={setNotes}
+                className="h-64"
+              />
+            </div>
             <Button onClick={handleSaveNotes}>Save Notes</Button>
           </CardContent>
         </Card>

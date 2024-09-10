@@ -21,12 +21,14 @@ const Notes = () => {
           <CardTitle>Farm Notes</CardTitle>
         </CardHeader>
         <CardContent>
-          <ReactQuill 
-            theme="snow" 
-            value={content} 
-            onChange={setContent}
-            className="h-64 mb-12"
-          />
+          <div className="mb-8">
+            <ReactQuill 
+              theme="snow" 
+              value={content} 
+              onChange={setContent}
+              className="h-64"
+            />
+          </div>
           <div className="mt-4">
             <Button onClick={handleSave}>Save Note</Button>
           </div>

@@ -37,13 +37,15 @@ const ProjectForm = ({ onClose, onSubmit }) => {
               </div>
               <div>
                 <label htmlFor="details" className="block text-sm font-medium text-gray-700 mb-1">Details</label>
-                <Controller
-                  name="details"
-                  control={control}
-                  render={({ field }) => (
-                    <ReactQuill {...field} className="h-40 mb-8" />
-                  )}
-                />
+                <div className="mb-8">
+                  <Controller
+                    name="details"
+                    control={control}
+                    render={({ field }) => (
+                      <ReactQuill {...field} className="h-40" />
+                    )}
+                  />
+                </div>
               </div>
               <div className="mt-8">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Next Actions</label>
