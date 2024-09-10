@@ -1,10 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Editor } from '@tinymce/tinymce-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import RichTextEditor from './RichTextEditor';
 
 const fetchProjects = async () => {
   // Mock function to fetch projects. In a real app, this would be an API call.
@@ -18,7 +18,6 @@ const fetchProjects = async () => {
 const Dashboard = () => {
   const [notes, setNotes] = useState('');
   const [selectedProject, setSelectedProject] = useState(null);
-  const editorRef = useRef(null);
   const queryClient = useQueryClient();
 
   const { data: projects, isLoading, error } = useQuery({
@@ -28,7 +27,6 @@ const Dashboard = () => {
 
   const toggleProjectCompletion = useMutation({
     mutationFn: (project) => {
-      // Mock function to toggle project completion. In a real app, this would be an API call.
       return Promise.resolve({ ...project, completed: !project.completed });
     },
     onSuccess: () => {
@@ -37,12 +35,8 @@ const Dashboard = () => {
   });
 
   const handleSaveNotes = () => {
-    if (editorRef.current) {
-      const content = editorRef.current.getContent();
-      // In a real app, this would save the notes to a backend
-      console.log('Saving notes:', content);
-      setNotes(content);
-    }
+    // In a real app, this would save the notes to a backend
+    console.log('Saving notes:', notes);
   };
 
   const currentProjects = projects?.filter(project => project.status === 'In Progress' && project.assignedTo === 'John Doe') || [];
@@ -105,25 +99,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="mb-4">
-              <Editor
-                apiKey="your-tinymce-api-key"
-                onInit={(evt, editor) => editorRef.current = editor}
-                initialValue={notes}
-                init={{
-                  height: 300,
-                  menubar: false,
-                  plugins: [
-                    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                    'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                    'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
-                  ],
-                  toolbar: 'undo redo | blocks | ' +
-                    'bold italic forecolor | alignleft aligncenter ' +
-                    'alignright alignjustify | bullist numlist outdent indent | ' +
-                    'removeformat | help',
-                  content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
-                }}
-              />
+              <RichTextEditor value={notes} onChange={setNotes} />
             </div>
             <Button onClick={handleSaveNotes}>Save Notes</Button>
           </CardContent>
