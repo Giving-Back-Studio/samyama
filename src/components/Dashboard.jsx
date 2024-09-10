@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import ProjectDialog from './ProjectDialog';
-import RichTextEditor from './RichTextEditor';
 import TaskList from './TaskList';
 import WeatherWidget from './WeatherWidget';
 import CropPlanner from './CropPlanner';
@@ -19,138 +19,102 @@ const fetchProjects = async () => {
 };
 
 const Dashboard = () => {
-  const [notes, setNotes] = useState('');
   const [selectedProject, setSelectedProject] = useState(null);
-  const queryClient = useQueryClient();
+  const [openSections, setOpenSections] = useState({
+    inProgress: true,
+    toDo: true,
+    tasks: true,
+    weather: true,
+    cropPlanner: true
+  });
 
   const { data: projects, isLoading, error } = useQuery({
     queryKey: ['projects'],
     queryFn: fetchProjects,
   });
 
-  const toggleProjectCompletion = useMutation({
-    mutationFn: (project) => {
-      return Promise.resolve({ ...project, completed: !project.completed });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['projects']);
-    },
-  });
-
-  const updateProjectMutation = useMutation({
-    mutationFn: (updatedProject) => {
-      return Promise.resolve(updatedProject);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['projects']);
-      setSelectedProject(null);
-    },
-  });
-
-  const handleSaveNotes = () => {
-    console.log('Saving notes:', notes);
+  const toggleSection = (section) => {
+    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
   const handleProjectClick = (project) => {
-    console.log('Project clicked:', project);
-    if (project && project.id) {
-      setSelectedProject(project);
-    }
+    setSelectedProject(project);
   };
 
-  const currentProjects = projects?.filter(project => project.status === 'In Progress' && project.assignedTo === 'John Doe') || [];
+  const renderProjects = (status) => {
+    return projects
+      .filter(project => project.status === status)
+      .map(project => (
+        <div key={project.id} className="mb-4 p-4 border rounded-lg">
+          <h3 
+            className="text-lg font-semibold cursor-pointer hover:text-blue-600"
+            onClick={() => handleProjectClick(project)}
+          >
+            {project.name}
+          </h3>
+          <ul className="list-disc list-inside mt-2">
+            {project.nextActions.map((action, index) => (
+              <li key={index} className="text-sm text-gray-600">{action}</li>
+            ))}
+          </ul>
+        </div>
+      ));
+  };
 
-  const allNextActions = currentProjects.flatMap(project => 
-    project.nextActions.map(action => ({ projectName: project.name, action }))
+  const renderCollapsibleSection = (title, content, section) => (
+    <Collapsible open={openSections[section]} onOpenChange={() => toggleSection(section)}>
+      <CollapsibleTrigger className="flex items-center w-full justify-between p-2 bg-gray-100 rounded-t-lg">
+        <h2 className="text-xl font-bold">{title}</h2>
+        {openSections[section] ? <ChevronDown /> : <ChevronRight />}
+      </CollapsibleTrigger>
+      <CollapsibleContent className="p-4 border border-t-0 rounded-b-lg">
+        {content}
+      </CollapsibleContent>
+    </Collapsible>
   );
+
+  if (isLoading) return <div>Loading dashboard...</div>;
+  if (error) return <div>Error loading dashboard: {error.message}</div>;
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold">Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Current Projects</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading && <p>Loading projects...</p>}
-            {error && <p>Error loading projects: {error.message}</p>}
-            {currentProjects.map(project => (
-              <div key={project.id} className="mb-4 p-4 border rounded-lg">
-                <div className="flex items-center justify-between">
-                  <h3 
-                    className="text-lg font-semibold cursor-pointer hover:text-blue-600"
-                    onClick={() => handleProjectClick(project)}
-                  >
-                    {project.name}
-                  </h3>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={project.completed}
-                      onCheckedChange={() => toggleProjectCompletion.mutate(project)}
-                    />
-                    <span>{project.completed ? 'Completed' : 'In Progress'}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>All Next Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="list-disc list-inside">
-              {allNextActions.map((item, index) => (
-                <li key={index} className="mb-2">
-                  <span className="font-semibold">{item.projectName}:</span> {item.action}
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Quick Notes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="mb-4">
-              <RichTextEditor value={notes} onChange={setNotes} />
-            </div>
-            <Button onClick={handleSaveNotes}>Save Notes</Button>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Weather</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <WeatherWidget />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Tasks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <TaskList />
-          </CardContent>
-        </Card>
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Crop Planner</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CropPlanner />
-          </CardContent>
-        </Card>
+      <div className="space-y-4">
+        {renderCollapsibleSection(
+          "In Progress Projects",
+          renderProjects('In Progress'),
+          'inProgress'
+        )}
+        {renderCollapsibleSection(
+          "To Do Projects",
+          renderProjects('To Do'),
+          'toDo'
+        )}
+        {renderCollapsibleSection(
+          "Tasks",
+          <TaskList fullView={true} />,
+          'tasks'
+        )}
+        {renderCollapsibleSection(
+          "Weather",
+          <WeatherWidget />,
+          'weather'
+        )}
+        {renderCollapsibleSection(
+          "Crop Planner",
+          <CropPlanner />,
+          'cropPlanner'
+        )}
       </div>
       {selectedProject && (
         <ProjectDialog
           project={selectedProject}
           onClose={() => setSelectedProject(null)}
-          onUpdate={(updatedProject) => updateProjectMutation.mutate(updatedProject)}
+          onUpdate={(updatedProject) => {
+            // Handle project update
+            console.log('Project updated:', updatedProject);
+            setSelectedProject(null);
+          }}
         />
       )}
     </div>
