@@ -1,7 +1,7 @@
 import React from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, ArrowRight, ChevronRight, ChevronDown } from "lucide-react";
+import { CheckCircle, ArrowRight, ChevronDown, ChevronRight } from "lucide-react";
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 
 const ProjectList = ({ projects, status, openProject, setOpenProject, toggleActionCompletion, onViewDetails }) => {
@@ -20,16 +20,14 @@ const ProjectList = ({ projects, status, openProject, setOpenProject, toggleActi
                     <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
                       <AccordionItem value={project.id.toString()}>
                         <AccordionTrigger className="hover:no-underline">
-                          <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center">
-                              {openProject === project.id.toString() ? (
-                                <ChevronDown className="h-4 w-4 mr-2" />
-                              ) : (
-                                <ChevronRight className="h-4 w-4 mr-2" />
-                              )}
-                              <span className="text-sm md:text-base text-left">{project.name}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
+                          <div className="flex items-center w-full">
+                            {openProject === project.id.toString() ? (
+                              <ChevronDown className="h-4 w-4 mr-2 flex-shrink-0" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 mr-2 flex-shrink-0" />
+                            )}
+                            <span className="text-sm md:text-base text-left flex-grow">{project.name}</span>
+                            <div className="flex items-center space-x-2 ml-auto">
                               {status === 'In Progress' ? (
                                 <Button 
                                   variant="ghost" 
