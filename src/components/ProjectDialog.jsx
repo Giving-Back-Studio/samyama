@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, GripVertical } from "lucide-react";
+import { CalendarIcon, GripVertical, X } from "lucide-react";
 import { format } from "date-fns";
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -59,25 +60,26 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[800px]">
+      <DialogContent className="sm:max-w-[900px]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Edit Project: {project.name}</DialogTitle>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-6 py-4">
           <div className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+              <Label htmlFor="name">Project Name</Label>
               <Input
                 id="name"
                 name="name"
                 value={editedProject.name}
                 onChange={handleInputChange}
+                className="mt-1"
               />
             </div>
             <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <Label htmlFor="status">Status</Label>
               <Select onValueChange={handleStatusChange} defaultValue={editedProject.status}>
-                <SelectTrigger>
+                <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -88,19 +90,20 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
               </Select>
             </div>
             <div>
-              <label htmlFor="assignedTo" className="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
+              <Label htmlFor="assignedTo">Assigned To</Label>
               <Input
                 id="assignedTo"
                 name="assignedTo"
                 value={editedProject.assignedTo}
                 onChange={handleInputChange}
+                className="mt-1"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+              <Label>Start Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
+                  <Button variant="outline" className="w-full justify-start text-left font-normal mt-1">
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {editedProject.startDate ? format(new Date(editedProject.startDate), 'PPP') : <span>Pick a date</span>}
                   </Button>
@@ -116,10 +119,10 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
               </Popover>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+              <Label>End Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
+                  <Button variant="outline" className="w-full justify-start text-left font-normal mt-1">
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {editedProject.endDate ? format(new Date(editedProject.endDate), 'PPP') : <span>Pick a date</span>}
                   </Button>
@@ -137,19 +140,19 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
           </div>
           <div className="space-y-4">
             <div>
-              <label htmlFor="details" className="block text-sm font-medium text-gray-700 mb-1">Details</label>
+              <Label htmlFor="details">Details</Label>
               <ReactQuill
                 value={editedProject.details}
                 onChange={handleDetailsChange}
-                className="h-40"
+                className="mt-1 h-40"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Next Actions</label>
+              <Label>Next Actions</Label>
               <DragDropContext onDragEnd={handleNextActionDragEnd}>
                 <Droppable droppableId="next-actions">
                   {(provided) => (
-                    <ul {...provided.droppableProps} ref={provided.innerRef} className="space-y-2 max-h-40 overflow-y-auto">
+                    <ul {...provided.droppableProps} ref={provided.innerRef} className="space-y-2 mt-1 max-h-40 overflow-y-auto">
                       {editedProject.nextActions.map((action, index) => (
                         <Draggable key={index} draggableId={`action-${index}`} index={index}>
                           {(provided) => (
@@ -166,8 +169,8 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
                                 onChange={(e) => updateNextAction(index, e.target.value)}
                                 className="flex-grow"
                               />
-                              <Button onClick={() => removeNextAction(index)} variant="destructive" size="sm">
-                                Remove
+                              <Button onClick={() => removeNextAction(index)} variant="ghost" size="sm">
+                                <X className="h-4 w-4" />
                               </Button>
                             </li>
                           )}
