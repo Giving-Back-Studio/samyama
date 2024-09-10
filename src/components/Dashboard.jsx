@@ -53,7 +53,9 @@ const Dashboard = () => {
   };
 
   const handleProjectClick = (project) => {
-    setSelectedProject(project);
+    if (project && project.id) {
+      setSelectedProject(project);
+    }
   };
 
   const currentProjects = projects?.filter(project => project.status === 'In Progress' && project.assignedTo === 'John Doe') || [];
