@@ -60,63 +60,69 @@ const Dashboard = () => {
   };
 
   const renderProjects = (status) => {
-    if (!projects) return null;
-    return projects
-      .filter(project => project.status === status)
-      .map(project => (
-        <Card key={project.id} className="mb-4">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {project.name}
-            </CardTitle>
-            <div className="flex items-center space-x-2">
-              {status === 'In Progress' ? (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => markProjectComplete(project.id)}
-                >
-                  <CheckCircle className="h-4 w-4" />
-                </Button>
-              ) : (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => moveProjectToInProgress(project.id)}
-                >
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              )}
+    if (!projects || projects.length === 0) return null;
+    const filteredProjects = projects.filter(project => project.status === status);
+    if (filteredProjects.length === 0) return <p>No {status} projects</p>;
+
+    return filteredProjects.map(project => (
+      <Card key={project.id} className="mb-4">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">
+            {project.name}
+          </CardTitle>
+          <div className="flex items-center space-x-2">
+            {status === 'In Progress' ? (
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={() => toggleProject(project.id)}
+                onClick={() => markProjectComplete(project.id)}
               >
-                {openProjects[project.id] ? (
-                  <ChevronDown className="h-4 w-4" />
-                ) : (
-                  <ChevronRight className="h-4 w-4" />
-                )}
+                <CheckCircle className="h-4 w-4" />
               </Button>
-            </div>
-          </CardHeader>
-          <Collapsible open={openProjects[project.id]}>
-            <CollapsibleContent>
-              <CardContent>
-                <ul className="list-disc list-inside">
-                  {project.nextActions.map((action, index) => (
-                    <li key={index} className="text-sm">{action}</li>
-                  ))}
-                </ul>
-              </CardContent>
-            </CollapsibleContent>
-          </Collapsible>
-        </Card>
-      ));
+            ) : (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => moveProjectToInProgress(project.id)}
+              >
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            )}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => toggleProject(project.id)}
+            >
+              {openProjects[project.id] ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        </CardHeader>
+        <Collapsible open={openProjects[project.id]}>
+          <CollapsibleContent>
+            <CardContent>
+              <ul className="list-disc list-inside">
+                {project.nextActions && project.nextActions.map((action, index) => (
+                  <li key={index} className="text-sm">{action}</li>
+                ))}
+              </ul>
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+    ));
   };
 
-  if (isLoadingProjects || isLoadingActivities) return <div>Loading dashboard...</div>;
-  if (projectsError || activitiesError) return <div>Error loading dashboard data</div>;
+  if (isLoadingProjects || isLoadingActivities) {
+    return <div>Loading dashboard...</div>;
+  }
+
+  if (projectsError || activitiesError) {
+    return <div>Error loading dashboard data: {projectsError?.message || activitiesError?.message}</div>;
+  }
 
   return (
     <div className="space-y-6">
