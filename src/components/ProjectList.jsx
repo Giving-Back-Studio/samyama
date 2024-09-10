@@ -1,112 +1,96 @@
-import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React from 'react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CheckCircle, ArrowUp, ArrowDown } from "lucide-react";
+import { CheckCircle, ArrowRight, GripVertical } from "lucide-react";
+import { Droppable, Draggable } from '@hello-pangea/dnd';
 
-const ProjectList = ({ projects, listFilter, setListFilter, toggleProjectCompletion, setSelectedProject }) => {
-  const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'ascending' });
-
-  const sortedProjects = useMemo(() => {
-    const sortableProjects = [...projects];
-    if (sortConfig.key) {
-      sortableProjects.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === 'ascending' ? -1 : 1;
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === 'ascending' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-    return sortableProjects;
-  }, [projects, sortConfig]);
-
-  const handleSort = (key) => {
-    setSortConfig(prevConfig => ({
-      key,
-      direction: prevConfig.key === key && prevConfig.direction === 'ascending' ? 'descending' : 'ascending',
-    }));
-  };
-
-  const SortIcon = ({ column }) => {
-    if (sortConfig.key !== column) return null;
-    return sortConfig.direction === 'ascending' ? 
-      <ArrowUp className="ml-2 h-4 w-4" /> : 
-      <ArrowDown className="ml-2 h-4 w-4" />;
-  };
+const ProjectList = ({ projects, status, openProject, setOpenProject, toggleActionCompletion }) => {
+  const filteredProjects = projects.filter(project => project.status === status);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Project List</CardTitle>
-        <div className="flex space-x-2">
-          <Button 
-            variant={listFilter === 'all' ? 'secondary' : 'ghost'} 
-            onClick={() => setListFilter('all')}
-          >
-            All
-          </Button>
-          <Button 
-            variant={listFilter === 'active' ? 'secondary' : 'ghost'} 
-            onClick={() => setListFilter('active')}
-          >
-            Active
-          </Button>
-          <Button 
-            variant={listFilter === 'completed' ? 'secondary' : 'ghost'} 
-            onClick={() => setListFilter('completed')}
-          >
-            Completed
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead onClick={() => handleSort('name')} className="cursor-pointer">
-                Name <SortIcon column="name" />
-              </TableHead>
-              <TableHead onClick={() => handleSort('status')} className="cursor-pointer">
-                Status <SortIcon column="status" />
-              </TableHead>
-              <TableHead onClick={() => handleSort('startDate')} className="cursor-pointer">
-                Start Date <SortIcon column="startDate" />
-              </TableHead>
-              <TableHead onClick={() => handleSort('endDate')} className="cursor-pointer">
-                End Date <SortIcon column="endDate" />
-              </TableHead>
-              <TableHead onClick={() => handleSort('assignedTo')} className="cursor-pointer">
-                Assigned To <SortIcon column="assignedTo" />
-              </TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sortedProjects.map((project) => (
-              <TableRow key={project.id} className="cursor-pointer hover:bg-gray-100">
-                <TableCell onClick={() => setSelectedProject(project)}>{project.name}</TableCell>
-                <TableCell onClick={() => setSelectedProject(project)}>{project.status}</TableCell>
-                <TableCell onClick={() => setSelectedProject(project)}>{project.startDate}</TableCell>
-                <TableCell onClick={() => setSelectedProject(project)}>{project.endDate}</TableCell>
-                <TableCell onClick={() => setSelectedProject(project)}>{project.assignedTo}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => toggleProjectCompletion.mutate(project)}
-                  >
-                    <CheckCircle className={`h-5 w-5 ${project.completed ? 'text-green-500' : 'text-gray-300'}`} />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+    <div>
+      <h3 className="text-lg font-semibold mb-2">{status}</h3>
+      <Droppable droppableId={status} type="PROJECT">
+        {(provided) => (
+          <div {...provided.droppableProps} ref={provided.innerRef}>
+            <Accordion type="single" collapsible value={openProject} onValueChange={setOpenProject}>
+              {filteredProjects.map((project, index) => (
+                <Draggable key={project.id} draggableId={project.id.toString()} index={index}>
+                  {(provided) => (
+                    <div ref={provided.innerRef} {...provided.draggableProps}>
+                      <AccordionItem value={project.id.toString()}>
+                        <AccordionTrigger className="hover:no-underline">
+                          <div className="flex items-center justify-between w-full">
+                            <span {...provided.dragHandleProps}><GripVertical className="inline mr-2" /></span>
+                            <span>{project.name}</span>
+                            <div className="flex items-center space-x-2">
+                              {status === 'In Progress' ? (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={(e) => { e.stopPropagation(); /* Mark as complete logic */ }}
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                  Mark as complete
+                                </Button>
+                              ) : (
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  onClick={(e) => { e.stopPropagation(); /* Mark as in progress logic */ }}
+                                >
+                                  <ArrowRight className="h-4 w-4 mr-1" />
+                                  Mark as in progress
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <Droppable droppableId={project.id.toString()} type="NEXT_ACTION">
+                            {(provided) => (
+                              <ul
+                                {...provided.droppableProps}
+                                ref={provided.innerRef}
+                                className="space-y-2"
+                              >
+                                {project.nextActions.map((action, index) => (
+                                  <Draggable key={action.id} draggableId={action.id} index={index}>
+                                    {(provided) => (
+                                      <li
+                                        ref={provided.innerRef}
+                                        {...provided.draggableProps}
+                                        {...provided.dragHandleProps}
+                                        className="flex items-center space-x-2 bg-gray-100 p-2 rounded-md"
+                                      >
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => toggleActionCompletion(project.id, action.id)}
+                                        >
+                                          <CheckCircle className={`h-4 w-4 ${action.completed ? 'text-green-500' : 'text-gray-300'}`} />
+                                        </Button>
+                                        <span className={action.completed ? 'line-through text-gray-500' : ''}>{action.content}</span>
+                                      </li>
+                                    )}
+                                  </Draggable>
+                                ))}
+                                {provided.placeholder}
+                              </ul>
+                            )}
+                          </Droppable>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+            </Accordion>
+            {provided.placeholder}
+          </div>
+        )}
+      </Droppable>
+    </div>
   );
 };
 
