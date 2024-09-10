@@ -1,12 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Calendar } from "@/components/ui/calendar";
-import { CheckCircle, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { CheckCircle, ArrowUp, ArrowDown } from "lucide-react";
 import ProjectForm from './ProjectForm';
 import ProjectDialog from './ProjectDialog';
 
@@ -89,7 +87,7 @@ const Projects = () => {
   };
 
   const SortIcon = ({ column }) => {
-    if (sortConfig.key !== column) return <ArrowUpDown className="ml-2 h-4 w-4" />;
+    if (sortConfig.key !== column) return null;
     return sortConfig.direction === 'ascending' ? 
       <ArrowUp className="ml-2 h-4 w-4" /> : 
       <ArrowDown className="ml-2 h-4 w-4" />;
