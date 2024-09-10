@@ -7,10 +7,10 @@ import { cn } from "@/lib/utils";
 const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [openGroups, setOpenGroups] = useState({});
+  const [openGroup, setOpenGroup] = useState(null);
 
   const isGroupOpen = (group) => {
-    return openGroups[group] || isPathInGroup(location.pathname, group);
+    return openGroup === group || isPathInGroup(location.pathname, group);
   };
 
   const isPathInGroup = (path, group) => {
@@ -23,13 +23,12 @@ const Layout = () => {
   };
 
   const toggleGroup = (group, firstItemPath) => {
-    setOpenGroups(prev => {
-      const newState = { ...prev, [group]: !prev[group] };
-      if (!prev[group]) {
-        navigate(firstItemPath);
-      }
-      return newState;
-    });
+    if (openGroup === group) {
+      setOpenGroup(null);
+    } else {
+      setOpenGroup(group);
+      navigate(firstItemPath);
+    }
   };
 
   return (
@@ -104,10 +103,7 @@ const NavItem = ({ to, icon, label, currentPath }) => (
 const NavGroup = ({ icon, label, children, isOpen, onClick, currentPath }) => (
   <li>
     <Collapsible open={isOpen} onOpenChange={onClick}>
-      <CollapsibleTrigger className={cn(
-        "flex items-center justify-between w-full text-gray-700 hover:bg-green-50 rounded-md p-2",
-        isOpen && "bg-green-100 text-green-800"
-      )}>
+      <CollapsibleTrigger className="flex items-center justify-between w-full text-gray-700 hover:bg-green-50 rounded-md p-2">
         <div className="flex items-center space-x-3">
           {icon}
           <span>{label}</span>
