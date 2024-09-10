@@ -7,21 +7,29 @@ import { cn } from "@/lib/utils";
 const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [openGroups, setOpenGroups] = useState({
-    plantTrackers: true,
-    accounting: true,
-    market: true
-  });
+  const [openGroups, setOpenGroups] = useState({});
 
-  const toggleGroup = (group) => {
-    setOpenGroups(prev => ({ ...prev, [group]: !prev[group] }));
+  const isGroupOpen = (group) => {
+    return openGroups[group] || isPathInGroup(location.pathname, group);
   };
 
-  const handleGroupClick = (group, firstItemPath) => {
-    toggleGroup(group);
-    if (!openGroups[group]) {
-      navigate(firstItemPath);
-    }
+  const isPathInGroup = (path, group) => {
+    const groupPaths = {
+      plantTrackers: ['/plants', '/plant-locations'],
+      accounting: ['/transactions', '/pl-statement', '/cash-flow', '/balance-sheet', '/budgeting'],
+      market: ['/market-dashboard', '/products', '/online-store', '/pickup-locations'],
+    };
+    return groupPaths[group]?.some(groupPath => path.startsWith(groupPath)) || false;
+  };
+
+  const toggleGroup = (group, firstItemPath) => {
+    setOpenGroups(prev => {
+      const newState = { ...prev, [group]: !prev[group] };
+      if (!prev[group]) {
+        navigate(firstItemPath);
+      }
+      return newState;
+    });
   };
 
   return (
@@ -36,8 +44,8 @@ const Layout = () => {
           <NavGroup
             icon={<Leaf size={20} />}
             label="Plant Trackers"
-            isOpen={openGroups.plantTrackers}
-            onClick={() => handleGroupClick('plantTrackers', '/plants')}
+            isOpen={isGroupOpen('plantTrackers')}
+            onClick={() => toggleGroup('plantTrackers', '/plants')}
             currentPath={location.pathname}
           >
             <NavItem to="/plants" label="My Plants" currentPath={location.pathname} />
@@ -46,8 +54,8 @@ const Layout = () => {
           <NavGroup
             icon={<DollarSign size={20} />}
             label="Accounting"
-            isOpen={openGroups.accounting}
-            onClick={() => handleGroupClick('accounting', '/transactions')}
+            isOpen={isGroupOpen('accounting')}
+            onClick={() => toggleGroup('accounting', '/transactions')}
             currentPath={location.pathname}
           >
             <NavItem to="/transactions" label="Transactions" currentPath={location.pathname} />
@@ -59,8 +67,8 @@ const Layout = () => {
           <NavGroup
             icon={<ShoppingBag size={20} />}
             label="Market"
-            isOpen={openGroups.market}
-            onClick={() => handleGroupClick('market', '/market-dashboard')}
+            isOpen={isGroupOpen('market')}
+            onClick={() => toggleGroup('market', '/market-dashboard')}
             currentPath={location.pathname}
           >
             <NavItem to="/market-dashboard" label="Dashboard" currentPath={location.pathname} />
@@ -98,7 +106,7 @@ const NavGroup = ({ icon, label, children, isOpen, onClick, currentPath }) => (
     <Collapsible open={isOpen} onOpenChange={onClick}>
       <CollapsibleTrigger className={cn(
         "flex items-center justify-between w-full text-gray-700 hover:bg-green-50 rounded-md p-2",
-        currentPath.startsWith(`/${label.toLowerCase().replace(' ', '-')}`) && "bg-green-100 text-green-800"
+        isOpen && "bg-green-100 text-green-800"
       )}>
         <div className="flex items-center space-x-3">
           {icon}
