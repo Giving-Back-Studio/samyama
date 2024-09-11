@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../integrations/supabase/supabase';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,10 +43,8 @@ const ErrorFallback = ({ error, resetErrorBoundary }) => (
 const ProjectViewContent = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   console.log('ProjectViewContent rendered. ID:', id);
-  console.log('QueryClient:', queryClient);
 
   const { data: project, isLoading, error } = useQuery({
     queryKey: ['project', id],

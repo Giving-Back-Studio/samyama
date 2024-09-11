@@ -73,7 +73,11 @@ const Projects = () => {
   };
 
   const handleViewProject = (project) => {
-    navigate(`/app/projects/${project.id}`);
+    if (project && project.id) {
+      navigate(`/app/projects/${project.id}`);
+    } else {
+      console.error('Invalid project data:', project);
+    }
   };
 
   if (isLoading) return <div>Loading projects...</div>;
