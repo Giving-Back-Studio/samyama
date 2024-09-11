@@ -46,7 +46,7 @@ const Projects = () => {
 
   const onDragEnd = (result) => {
     const { source, destination, draggableId } = result;
-    if (!destination) return;
+    if (!destination || !projects) return;
 
     const updatedProjects = Array.from(projects);
     const [reorderedProject] = updatedProjects.splice(source.index, 1);
@@ -54,7 +54,9 @@ const Projects = () => {
 
     if (source.droppableId !== destination.droppableId) {
       const draggedProject = updatedProjects.find(p => p.id.toString() === draggableId);
-      draggedProject.status = destination.droppableId;
+      if (draggedProject) {
+        draggedProject.status = destination.droppableId;
+      }
     }
 
     updateProjectMutation.mutate(updatedProjects);
