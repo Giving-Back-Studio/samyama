@@ -11,6 +11,7 @@ import ProjectList from './ProjectList';
 import ProjectTable from './ProjectTable';
 import ProjectForm from './ProjectForm';
 import { useProjects } from '../hooks/useProjects';
+import ProjectBoard from './ProjectBoard';
 
 const Projects = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -80,6 +81,16 @@ const Projects = () => {
     }
   };
 
+  const handleAddProject = async (newProject) => {
+    try {
+      const addedProject = await addProject(newProject);
+      setIsAddDialogOpen(false);
+      navigate(`/app/projects/${addedProject.id}`);
+    } catch (error) {
+      console.error('Error adding project:', error);
+    }
+  };
+
   if (isLoading) return <div>Loading projects...</div>;
   if (error) return <div>Error loading projects: {error.message}</div>;
 
@@ -120,11 +131,12 @@ const Projects = () => {
         </TabsList>
 
         <TabsContent value="board">
-          <ProjectBoard
-            projects={filteredAndSortedProjects}
-            onDragEnd={onDragEnd}
-            onProjectClick={handleViewProject}
-          />
+          <DragDropContext onDragEnd={onDragEnd}>
+            <ProjectBoard
+              projects={filteredAndSortedProjects}
+              onProjectClick={handleViewProject}
+            />
+          </DragDropContext>
         </TabsContent>
 
         <TabsContent value="list">
@@ -141,38 +153,11 @@ const Projects = () => {
       {isAddDialogOpen && (
         <ProjectForm
           onClose={() => setIsAddDialogOpen(false)}
-          onSubmit={addProject}
+          onSubmit={handleAddProject}
         />
       )}
     </div>
   );
 };
-
-const ProjectBoard = ({ projects, onDragEnd, onProjectClick }) => (
-  <DragDropContext onDragEnd={onDragEnd}>
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {['To Do', 'In Progress', 'Done'].map((status) => (
-        <Card key={status}>
-          <CardHeader>
-            <CardTitle>{status}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Droppable droppableId={status}>
-              {(provided) => (
-                <div {...provided.droppableProps} ref={provided.innerRef}>
-                  <ProjectList
-                    projects={projects.filter(p => p.status === status)}
-                    onProjectClick={onProjectClick}
-                  />
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  </DragDropContext>
-);
 
 export default Projects;

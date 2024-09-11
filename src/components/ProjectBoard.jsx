@@ -1,30 +1,30 @@
 import React from 'react';
+import { Droppable } from '@hello-pangea/dnd';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import ProjectList from './ProjectList';
 
 const ProjectBoard = ({ projects, onProjectClick }) => {
   const columns = ['To Do', 'In Progress', 'Done'];
 
   return (
-    <div className="grid grid-cols-3 gap-4">
-      {columns.map(column => (
-        <Card key={column}>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {columns.map((status) => (
+        <Card key={status}>
           <CardHeader>
-            <CardTitle>{column}</CardTitle>
+            <CardTitle>{status}</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2">
-              {projects
-                .filter(project => project.status === column)
-                .map(project => (
-                  <li 
-                    key={project.id} 
-                    className="bg-white p-2 rounded shadow cursor-pointer hover:bg-gray-100"
-                    onClick={() => onProjectClick(project)}
-                  >
-                    {project.name}
-                  </li>
-                ))}
-            </ul>
+            <Droppable droppableId={status}>
+              {(provided) => (
+                <div {...provided.droppableProps} ref={provided.innerRef}>
+                  <ProjectList
+                    projects={projects.filter(p => p.status === status)}
+                    onProjectClick={onProjectClick}
+                  />
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
           </CardContent>
         </Card>
       ))}
