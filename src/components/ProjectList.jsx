@@ -1,6 +1,5 @@
 import React from 'react';
 import { Draggable } from '@hello-pangea/dnd';
-import { Button } from "@/components/ui/button";
 
 const ProjectList = ({ projects, onProjectClick }) => {
   return (
@@ -12,15 +11,10 @@ const ProjectList = ({ projects, onProjectClick }) => {
               ref={provided.innerRef}
               {...provided.draggableProps}
               {...provided.dragHandleProps}
-              className="bg-white p-3 rounded shadow"
+              className="bg-white p-3 rounded shadow cursor-pointer hover:bg-gray-50 transition-colors"
+              onClick={() => onProjectClick(project)}
             >
-              <Button
-                variant="ghost"
-                className="w-full justify-start text-left font-semibold"
-                onClick={() => onProjectClick(project)}
-              >
-                {project.name}
-              </Button>
+              <span className="font-medium">{project.name}</span>
             </div>
           )}
         </Draggable>
