@@ -8,18 +8,18 @@ import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 
-const ProjectDetails = ({ project, onUpdate }) => {
+const ProjectDetails = ({ project, onChange }) => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    onUpdate({ ...project, [name]: value });
+    onChange({ [name]: value });
   };
 
   const handleDateChange = (field, date) => {
-    onUpdate({ ...project, [field]: date });
+    onChange({ [field]: date });
   };
 
   const handleStatusChange = (status) => {
-    onUpdate({ ...project, status });
+    onChange({ status });
   };
 
   return (

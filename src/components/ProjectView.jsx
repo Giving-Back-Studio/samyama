@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../integrations/supabase/supabase';
@@ -41,6 +41,7 @@ const ProjectViewContent = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [editedProject, setEditedProject] = useState(null);
 
   const { data: project, isLoading, error } = useQuery({
     queryKey: ['project', id],
@@ -52,6 +53,7 @@ const ProjectViewContent = () => {
     mutationFn: updateProject,
     onSuccess: () => {
       queryClient.invalidateQueries(['project', id]);
+      setEditedProject(null);
     },
   });
 
@@ -59,19 +61,32 @@ const ProjectViewContent = () => {
   if (error) return <ErrorFallback error={error} resetErrorBoundary={() => navigate('/app/projects')} />;
   if (!project) return <div className="text-center p-4">Project not found</div>;
 
-  const handleUpdate = (updatedProject) => {
-    updateProjectMutation.mutate(updatedProject);
+  const handleChange = (updatedFields) => {
+    setEditedProject({ ...project, ...updatedFields });
+  };
+
+  const handleSave = () => {
+    if (editedProject) {
+      updateProjectMutation.mutate(editedProject);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditedProject(null);
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <Button onClick={() => navigate('/app/projects')}>Back to Projects</Button>
-        <h1 className="text-3xl font-bold">{project.name || 'Unnamed Project'}</h1>
-      </div>
       <Card>
         <CardContent className="pt-6">
-          <ProjectDetails project={project} onUpdate={handleUpdate} />
+          <ProjectDetails 
+            project={editedProject || project} 
+            onChange={handleChange} 
+          />
+          <div className="flex justify-end space-x-4 mt-6">
+            <Button onClick={handleCancel} variant="outline">Cancel</Button>
+            <Button onClick={handleSave}>Save</Button>
+          </div>
         </CardContent>
       </Card>
     </div>
