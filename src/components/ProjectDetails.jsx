@@ -7,8 +7,21 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '../integrations/supabase/supabase';
+
+const fetchUsers = async () => {
+  const { data, error } = await supabase.from('users').select('id, name');
+  if (error) throw error;
+  return data;
+};
 
 const ProjectDetails = ({ project, onChange }) => {
+  const { data: users, isLoading: isLoadingUsers } = useQuery({
+    queryKey: ['users'],
+    queryFn: fetchUsers,
+  });
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     onChange({ [name]: value });
@@ -20,6 +33,10 @@ const ProjectDetails = ({ project, onChange }) => {
 
   const handleStatusChange = (status) => {
     onChange({ status });
+  };
+
+  const handleAssignedToChange = (assignedTo) => {
+    onChange({ assigned_to: assignedTo });
   };
 
   return (
@@ -85,7 +102,20 @@ const ProjectDetails = ({ project, onChange }) => {
       </div>
       <div>
         <label htmlFor="assigned_to" className="block text-sm font-medium text-gray-700">Assigned To</label>
-        <Input id="assigned_to" name="assigned_to" value={project.assigned_to} onChange={handleInputChange} className="mt-1" />
+        <Select name="assigned_to" value={project.assigned_to} onValueChange={handleAssignedToChange}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select user" />
+          </SelectTrigger>
+          <SelectContent>
+            {isLoadingUsers ? (
+              <SelectItem value="">Loading users...</SelectItem>
+            ) : (
+              users?.map((user) => (
+                <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
+              ))
+            )}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   );

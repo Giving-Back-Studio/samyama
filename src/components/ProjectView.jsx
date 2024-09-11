@@ -53,7 +53,7 @@ const ProjectViewContent = () => {
     mutationFn: updateProject,
     onSuccess: () => {
       queryClient.invalidateQueries(['project', id]);
-      setEditedProject(null);
+      navigate('/app/projects');
     },
   });
 
@@ -72,7 +72,7 @@ const ProjectViewContent = () => {
   };
 
   const handleCancel = () => {
-    setEditedProject(null);
+    navigate('/app/projects');
   };
 
   return (
