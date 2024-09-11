@@ -112,7 +112,17 @@ const ProjectViewContent = () => {
 const ProjectView = () => {
   console.log('ProjectView component rendered');
   return (
-    <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => window.location.reload()}>
+    <ErrorBoundary
+      FallbackComponent={ErrorFallback}
+      onReset={() => {
+        console.log('Resetting error boundary');
+        window.location.reload();
+      }}
+      onError={(error, info) => {
+        console.error('Error caught by ErrorBoundary:', error);
+        console.error('Component stack:', info.componentStack);
+      }}
+    >
       <ProjectViewContent />
     </ErrorBoundary>
   );
