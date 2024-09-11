@@ -9,8 +9,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { format, isValid, parseISO } from "date-fns";
+import NextActions from './NextActions';
+import UserSelect from './UserSelect';
 
-const ProjectDialog = ({ project, onClose, onUpdate }) => {
+const ProjectDialog = ({ project, onClose, onUpdate, users }) => {
   const { control, handleSubmit } = useForm({
     defaultValues: {
       ...project,
@@ -27,9 +29,7 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
     });
   };
 
-  const formatDate = (date) => {
-    return date && isValid(date) ? format(date, "PPP") : "Pick a date";
-  };
+  const formatDate = (date) => date && isValid(date) ? format(date, "PPP") : "Pick a date";
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -40,118 +40,44 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-4">
+              <FormField name="name" control={control} label="Name" />
+              <FormField name="description" control={control} label="Description" as={Textarea} />
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Next Actions</label>
                 <Controller
-                  name="name"
-                  control={control}
-                  rules={{ required: true }}
-                  render={({ field }) => (
-                    <Input id="name" {...field} />
-                  )}
-                />
-              </div>
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
-                <Controller
-                  name="description"
+                  name="nextActions"
                   control={control}
                   render={({ field }) => (
-                    <Textarea id="description" {...field} />
+                    <NextActions projectId={project.id} actions={field.value || []} />
                   )}
-                />
-              </div>
-              <div>
-                <label htmlFor="assignedTo" className="block text-sm font-medium text-gray-700">Assigned To</label>
-                <Controller
-                  name="assignedTo"
-                  control={control}
-                  render={({ field }) => <Input id="assignedTo" {...field} />}
                 />
               </div>
             </div>
             <div className="space-y-4">
-              <div>
-                <label htmlFor="status" className="block text-sm font-medium text-gray-700">Status</label>
-                <Controller
-                  name="status"
-                  control={control}
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="To Do">To Do</SelectItem>
-                        <SelectItem value="In Progress">In Progress</SelectItem>
-                        <SelectItem value="Done">Done</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </div>
-              <div>
-                <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">Start Date</label>
-                <Controller
-                  name="startDate"
-                  control={control}
-                  render={({ field }) => (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className={`w-full justify-start text-left font-normal`}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {formatDate(field.value)}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                />
-              </div>
-              <div>
-                <label htmlFor="endDate" className="block text-sm font-medium text-gray-700">End Date</label>
-                <Controller
-                  name="endDate"
-                  control={control}
-                  render={({ field }) => (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className={`w-full justify-start text-left font-normal`}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {formatDate(field.value)}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                />
-              </div>
+              <FormField
+                name="status"
+                control={control}
+                label="Status"
+                as={Select}
+                options={[
+                  { value: "To Do", label: "To Do" },
+                  { value: "In Progress", label: "In Progress" },
+                  { value: "Done", label: "Done" },
+                ]}
+              />
+              <FormField
+                name="assignedTo"
+                control={control}
+                label="Assigned To"
+                as={UserSelect}
+                users={users}
+              />
+              <DateField name="startDate" control={control} label="Start Date" />
+              <DateField name="endDate" control={control} label="End Date" />
             </div>
           </div>
           <DialogFooter className="mt-6">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
+            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
             <Button type="submit">Update Project</Button>
           </DialogFooter>
         </form>
@@ -159,5 +85,37 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
     </Dialog>
   );
 };
+
+const FormField = ({ name, control, label, as: Component = Input, ...props }) => (
+  <div>
+    <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+    <Controller
+      name={name}
+      control={control}
+      render={({ field }) => <Component id={name} {...field} {...props} />}
+    />
+  </div>
+);
+
+const DateField = ({ name, control, label }) => (
+  <FormField
+    name={name}
+    control={control}
+    label={label}
+    as={({ value, onChange }) => (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="outline" className="w-full justify-start text-left font-normal">
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {formatDate(value)}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0">
+          <Calendar mode="single" selected={value} onSelect={onChange} initialFocus />
+        </PopoverContent>
+      </Popover>
+    )}
+  />
+);
 
 export default ProjectDialog;
