@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,17 +10,16 @@ import { PlusCircle, Search } from "lucide-react";
 import ProjectList from './ProjectList';
 import ProjectTable from './ProjectTable';
 import ProjectForm from './ProjectForm';
-import ProjectDialog from './ProjectDialog';
 import { useProjects } from '../hooks/useProjects';
 
 const Projects = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState(null);
   const [activeTab, setActiveTab] = useState("board");
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
   const [filterMyProjects, setFilterMyProjects] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
   
   const { projects, isLoading, error, addProject, updateProject } = useProjects();
 
@@ -72,6 +72,10 @@ const Projects = () => {
     }
   };
 
+  const handleViewProject = (project) => {
+    navigate(`/app/projects/${project.id}`);
+  };
+
   if (isLoading) return <div>Loading projects...</div>;
   if (error) return <div>Error loading projects: {error.message}</div>;
 
@@ -115,14 +119,14 @@ const Projects = () => {
           <ProjectBoard
             projects={filteredAndSortedProjects}
             onDragEnd={onDragEnd}
-            onProjectClick={setSelectedProject}
+            onProjectClick={handleViewProject}
           />
         </TabsContent>
 
         <TabsContent value="list">
           <ProjectTable
             projects={filteredAndSortedProjects}
-            onViewDetails={setSelectedProject}
+            onViewDetails={handleViewProject}
             sortBy={sortBy}
             sortOrder={sortOrder}
             onSort={handleSort}
@@ -134,15 +138,6 @@ const Projects = () => {
         <ProjectForm
           onClose={() => setIsAddDialogOpen(false)}
           onSubmit={addProject}
-        />
-      )}
-
-      {selectedProject && (
-        <ProjectDialog
-          project={selectedProject}
-          onClose={() => setSelectedProject(null)}
-          onUpdate={updateProject}
-          users={[]} // Add this line to pass an empty array of users
         />
       )}
     </div>

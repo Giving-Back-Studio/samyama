@@ -8,6 +8,7 @@ import LandingPage from "./components/LandingPage";
 import SignupPage from "./components/SignupPage";
 import OnboardingPage from "./components/OnboardingPage";
 import Projects from "./components/Projects";
+import ProjectView from "./components/ProjectView";
 import Plants from "./components/Plants";
 import PlantLocations from "./components/PlantLocations";
 import Plantings from "./components/Plantings";
@@ -55,6 +56,7 @@ const App = () => (
               <Route path="/app" element={<Layout />}>
                 <Route index element={<Navigate to="/app/projects" replace />} />
                 <Route path="projects" element={<Projects />} />
+                <Route path="projects/:id" element={<ProjectView />} />
                 <Route path="plants" element={<Plants />} />
                 <Route path="plant-locations" element={<PlantLocations />} />
                 <Route path="plantings" element={<Plantings />} />
