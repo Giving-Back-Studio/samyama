@@ -1,12 +1,12 @@
 import React from 'react';
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
-import RichTextEditor from './RichTextEditor';
 
 const ProjectDetails = ({ project, onChange, users }) => {
   const handleInputChange = (e) => {
@@ -26,10 +26,6 @@ const ProjectDetails = ({ project, onChange, users }) => {
     onChange({ assigned_to: assignedTo });
   };
 
-  const handleDescriptionChange = (content) => {
-    onChange({ description: content });
-  };
-
   return (
     <div className="space-y-4">
       <div>
@@ -38,10 +34,7 @@ const ProjectDetails = ({ project, onChange, users }) => {
       </div>
       <div>
         <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
-        <RichTextEditor
-          value={project.description}
-          onChange={handleDescriptionChange}
-        />
+        <Textarea id="description" name="description" value={project.description} onChange={handleInputChange} className="mt-1" />
       </div>
       <div>
         <label htmlFor="status" className="block text-sm font-medium text-gray-700">Status</label>
