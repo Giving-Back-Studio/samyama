@@ -51,7 +51,7 @@ const ProjectViewContent = () => {
     queryFn: () => fetchProject(id),
     retry: 1,
     refetchOnWindowFocus: false,
-    enabled: !!id, // Only run the query if we have an ID
+    enabled: !!id,
   });
 
   console.log('Query result:', { project, isLoading, error });
@@ -63,10 +63,17 @@ const ProjectViewContent = () => {
   }
   if (!project) return <div>Project not found</div>;
 
+  const renderProjectDetail = (label, value) => (
+    <div>
+      <h3 className="font-semibold">{label}</h3>
+      <p>{value || 'Not set'}</p>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">{project.name}</h1>
+        <h1 className="text-3xl font-bold">{project.name || 'Unnamed Project'}</h1>
         <Button onClick={() => navigate('/app/projects')}>Back to Projects</Button>
       </div>
       <Card>
@@ -75,26 +82,11 @@ const ProjectViewContent = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <h3 className="font-semibold">Description</h3>
-              <p>{project.description || 'No description available'}</p>
-            </div>
-            <div>
-              <h3 className="font-semibold">Status</h3>
-              <p>{project.status || 'Not set'}</p>
-            </div>
-            <div>
-              <h3 className="font-semibold">Start Date</h3>
-              <p>{project.start_date || 'Not set'}</p>
-            </div>
-            <div>
-              <h3 className="font-semibold">End Date</h3>
-              <p>{project.end_date || 'Not set'}</p>
-            </div>
-            <div>
-              <h3 className="font-semibold">Assigned To</h3>
-              <p>{project.assigned_to || 'Not assigned'}</p>
-            </div>
+            {renderProjectDetail('Description', project.description)}
+            {renderProjectDetail('Status', project.status)}
+            {renderProjectDetail('Start Date', project.start_date)}
+            {renderProjectDetail('End Date', project.end_date)}
+            {renderProjectDetail('Assigned To', project.assigned_to)}
           </div>
         </CardContent>
       </Card>
