@@ -11,11 +11,7 @@ import ProjectList from './ProjectList';
 import ProjectTable from './ProjectTable';
 import ProjectForm from './ProjectForm';
 import ProjectDialog from './ProjectDialog';
-
-const fetchProjects = async () => {
-  const storedProjects = localStorage.getItem('projects');
-  return storedProjects ? JSON.parse(storedProjects) : [];
-};
+import { fetchProjects, addProject, updateProject } from '../utils/projectUtils';
 
 const Projects = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -33,11 +29,7 @@ const Projects = () => {
   });
 
   const addProjectMutation = useMutation({
-    mutationFn: (project) => {
-      const updatedProjects = [...(projects || []), { id: Date.now(), createdAt: new Date().toISOString(), ...project }];
-      localStorage.setItem('projects', JSON.stringify(updatedProjects));
-      return Promise.resolve({ id: Date.now(), createdAt: new Date().toISOString(), ...project });
-    },
+    mutationFn: addProject,
     onSuccess: () => {
       queryClient.invalidateQueries('projects');
       setIsAddDialogOpen(false);
@@ -45,13 +37,7 @@ const Projects = () => {
   });
 
   const updateProjectMutation = useMutation({
-    mutationFn: (updatedProject) => {
-      const updatedProjects = projects.map(p => 
-        p.id === updatedProject.id ? updatedProject : p
-      );
-      localStorage.setItem('projects', JSON.stringify(updatedProjects));
-      return Promise.resolve(updatedProject);
-    },
+    mutationFn: updateProject,
     onSuccess: () => {
       queryClient.invalidateQueries('projects');
       setSelectedProject(null);
@@ -71,8 +57,7 @@ const Projects = () => {
       draggedProject.status = destination.droppableId;
     }
 
-    localStorage.setItem('projects', JSON.stringify(updatedProjects));
-    queryClient.setQueryData(['projects'], updatedProjects);
+    updateProjectMutation.mutate(updatedProjects);
   };
 
   const filteredAndSortedProjects = useMemo(() => {
@@ -148,14 +133,14 @@ const Projects = () => {
           <ProjectBoard
             projects={filteredAndSortedProjects}
             onDragEnd={onDragEnd}
-            onViewDetails={setSelectedProject}
+            onProjectClick={setSelectedProject}
           />
         </TabsContent>
 
         <TabsContent value="list">
           <ProjectTable
             projects={filteredAndSortedProjects}
-            onViewDetails={setSelectedProject}
+            onProjectClick={setSelectedProject}
             sortBy={sortBy}
             sortOrder={sortOrder}
             onSort={handleSort}
@@ -181,7 +166,7 @@ const Projects = () => {
   );
 };
 
-const ProjectBoard = ({ projects, onDragEnd, onViewDetails }) => (
+const ProjectBoard = ({ projects, onDragEnd, onProjectClick }) => (
   <DragDropContext onDragEnd={onDragEnd}>
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {['To Do', 'In Progress', 'Done'].map((status) => (
@@ -195,7 +180,7 @@ const ProjectBoard = ({ projects, onDragEnd, onViewDetails }) => (
                 <div {...provided.droppableProps} ref={provided.innerRef}>
                   <ProjectList
                     projects={projects.filter(p => p.status === status)}
-                    onViewDetails={onViewDetails}
+                    onProjectClick={onProjectClick}
                   />
                   {provided.placeholder}
                 </div>
