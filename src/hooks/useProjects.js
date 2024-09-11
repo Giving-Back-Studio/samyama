@@ -8,8 +8,12 @@ const fetchProjects = async () => {
 };
 
 const addProject = async (newProject) => {
+  console.log('Adding new project:', newProject); // Debug log
   const { data, error } = await supabase.from('projects').insert(newProject).single();
-  if (error) throw error;
+  if (error) {
+    console.error('Error adding project:', error); // Debug log
+    throw error;
+  }
   return data;
 };
 
@@ -33,8 +37,12 @@ export const useProjects = () => {
 
   const addProjectMutation = useMutation({
     mutationFn: addProject,
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Project added successfully:', data); // Debug log
       queryClient.invalidateQueries('projects');
+    },
+    onError: (error) => {
+      console.error('Error in addProjectMutation:', error); // Debug log
     },
   });
 
@@ -51,5 +59,6 @@ export const useProjects = () => {
     error: projectsQuery.error,
     addProject: addProjectMutation.mutate,
     updateProject: updateProjectMutation.mutate,
+    addProjectError: addProjectMutation.error,
   };
 };
