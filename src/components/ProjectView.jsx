@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../integrations/supabase/supabase';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ErrorBoundary } from 'react-error-boundary';
 import ProjectDetails from './ProjectDetails';
@@ -66,14 +66,11 @@ const ProjectViewContent = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">{project.name || 'Unnamed Project'}</h1>
         <Button onClick={() => navigate('/app/projects')}>Back to Projects</Button>
+        <h1 className="text-3xl font-bold">{project.name || 'Unnamed Project'}</h1>
       </div>
       <Card>
-        <CardHeader>
-          <CardTitle>Project Details</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <ProjectDetails project={project} onUpdate={handleUpdate} />
         </CardContent>
       </Card>
