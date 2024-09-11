@@ -24,6 +24,7 @@ import PickupLocations from "./components/PickupLocations";
 import Contacts from "./components/Contacts";
 import AccountSettings from "./components/AccountSettings";
 import UserManagement from "./components/UserManagement";
+import { ErrorBoundary } from 'react-error-boundary';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,39 +35,48 @@ const queryClient = new QueryClient({
   },
 });
 
+const ErrorFallback = ({ error }) => (
+  <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+    <h2 className="text-lg font-semibold mb-2">Oops! Something went wrong:</h2>
+    <pre className="text-sm overflow-auto">{error.message}</pre>
+  </div>
+);
+
 const App = () => (
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/onboarding" element={<OnboardingPage />} />
-            <Route path="/app" element={<Layout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="projects" element={<Projects />} />
-              <Route path="plants" element={<Plants />} />
-              <Route path="plant-locations" element={<PlantLocations />} />
-              <Route path="plantings" element={<Plantings />} />
-              <Route path="transactions" element={<Transactions />} />
-              <Route path="pl-statement" element={<PLStatement />} />
-              <Route path="cash-flow" element={<CashFlow />} />
-              <Route path="balance-sheet" element={<BalanceSheet />} />
-              <Route path="budgeting" element={<Budgeting />} />
-              <Route path="market-dashboard" element={<MarketDashboard />} />
-              <Route path="products" element={<Products />} />
-              <Route path="online-store" element={<OnlineStore />} />
-              <Route path="pickup-locations" element={<PickupLocations />} />
-              <Route path="contacts" element={<Contacts />} />
-              <Route path="account-settings" element={<AccountSettings />} />
-              <Route path="user-management" element={<UserManagement />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/onboarding" element={<OnboardingPage />} />
+              <Route path="/app" element={<Layout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="projects" element={<Projects />} />
+                <Route path="plants" element={<Plants />} />
+                <Route path="plant-locations" element={<PlantLocations />} />
+                <Route path="plantings" element={<Plantings />} />
+                <Route path="transactions" element={<Transactions />} />
+                <Route path="pl-statement" element={<PLStatement />} />
+                <Route path="cash-flow" element={<CashFlow />} />
+                <Route path="balance-sheet" element={<BalanceSheet />} />
+                <Route path="budgeting" element={<Budgeting />} />
+                <Route path="market-dashboard" element={<MarketDashboard />} />
+                <Route path="products" element={<Products />} />
+                <Route path="online-store" element={<OnlineStore />} />
+                <Route path="pickup-locations" element={<PickupLocations />} />
+                <Route path="contacts" element={<Contacts />} />
+                <Route path="account-settings" element={<AccountSettings />} />
+                <Route path="user-management" element={<UserManagement />} />
+              </Route>
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );
 
