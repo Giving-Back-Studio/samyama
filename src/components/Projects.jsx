@@ -12,6 +12,7 @@ import ProjectTable from './ProjectTable';
 import ProjectForm from './ProjectForm';
 import ProjectDialog from './ProjectDialog';
 import { fetchProjects, addProject, updateProject } from '../utils/projectUtils';
+import { useProjects } from '../hooks/useProjects';
 
 const Projects = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -21,46 +22,8 @@ const Projects = () => {
   const [sortOrder, setSortOrder] = useState("desc");
   const [filterMyProjects, setFilterMyProjects] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const queryClient = useQueryClient();
-
-  const { data: projects, isLoading, error } = useQuery({
-    queryKey: ['projects'],
-    queryFn: fetchProjects,
-  });
-
-  const addProjectMutation = useMutation({
-    mutationFn: addProject,
-    onSuccess: () => {
-      queryClient.invalidateQueries('projects');
-      setIsAddDialogOpen(false);
-    },
-  });
-
-  const updateProjectMutation = useMutation({
-    mutationFn: updateProject,
-    onSuccess: () => {
-      queryClient.invalidateQueries('projects');
-      setSelectedProject(null);
-    },
-  });
-
-  const onDragEnd = (result) => {
-    const { source, destination, draggableId } = result;
-    if (!destination || !projects) return;
-
-    const updatedProjects = Array.from(projects);
-    const [reorderedProject] = updatedProjects.splice(source.index, 1);
-    updatedProjects.splice(destination.index, 0, reorderedProject);
-
-    if (source.droppableId !== destination.droppableId) {
-      const draggedProject = updatedProjects.find(p => p.id.toString() === draggableId);
-      if (draggedProject) {
-        draggedProject.status = destination.droppableId;
-      }
-    }
-
-    updateProjectMutation.mutate(updatedProjects);
-  };
+  
+  const { projects, isLoading, error, addProjectMutation, updateProjectMutation } = useProjects();
 
   const filteredAndSortedProjects = useMemo(() => {
     if (!projects) return [];
@@ -91,6 +54,23 @@ const Projects = () => {
     } else {
       setSortBy(field);
       setSortOrder("asc");
+    }
+  };
+
+  const onDragEnd = (result) => {
+    const { source, destination, draggableId } = result;
+    if (!destination || !projects) return;
+
+    const updatedProjects = Array.from(projects);
+    const [reorderedProject] = updatedProjects.splice(source.index, 1);
+    updatedProjects.splice(destination.index, 0, reorderedProject);
+
+    if (source.droppableId !== destination.droppableId) {
+      const draggedProject = updatedProjects.find(p => p.id.toString() === draggableId);
+      if (draggedProject) {
+        draggedProject.status = destination.droppableId;
+        updateProjectMutation.mutate(draggedProject);
+      }
     }
   };
 
