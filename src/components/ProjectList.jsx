@@ -1,7 +1,7 @@
 import React from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, ArrowRight } from "lucide-react";
+import { CheckCircle, ArrowRight, ChevronDown } from "lucide-react";
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 
 const ProjectList = ({ projects, status, openProject, setOpenProject, toggleActionCompletion, onViewDetails }) => {
@@ -21,6 +21,7 @@ const ProjectList = ({ projects, status, openProject, setOpenProject, toggleActi
                       <AccordionItem value={project.id.toString()}>
                         <AccordionTrigger className="hover:no-underline">
                           <div className="flex items-center w-full">
+                            <ChevronDown className="h-4 w-4 mr-2 shrink-0 transition-transform duration-200" />
                             <span className="text-sm md:text-base text-left flex-grow">{project.name}</span>
                             <div className="flex items-center space-x-2 ml-auto">
                               {status === 'In Progress' ? (

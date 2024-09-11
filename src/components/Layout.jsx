@@ -18,9 +18,9 @@ const Layout = () => {
 
   const isPathInGroup = (path, group) => {
     const groupPaths = {
-      plantTrackers: ['/plants', '/plant-locations', '/plantings'],
-      accounting: ['/transactions', '/pl-statement', '/cash-flow', '/balance-sheet', '/budgeting'],
-      market: ['/market-dashboard', '/products', '/online-store', '/pickup-locations'],
+      plantTrackers: ['/app/plants', '/app/plant-locations', '/app/plantings'],
+      accounting: ['/app/transactions', '/app/pl-statement', '/app/cash-flow', '/app/balance-sheet', '/app/budgeting'],
+      market: ['/app/market-dashboard', '/app/products', '/app/online-store', '/app/pickup-locations'],
     };
     return groupPaths[group]?.some(groupPath => path.startsWith(groupPath)) || false;
   };
@@ -36,47 +36,47 @@ const Layout = () => {
 
   const NavContent = () => (
     <ul className="space-y-2 p-4">
-      <NavItem to="/" icon={<Home size={20} />} label="Home" currentPath={location.pathname} />
-      <NavItem to="/projects" icon={<Briefcase size={20} />} label="Projects" currentPath={location.pathname} />
+      <NavItem to="/app" icon={<Home size={20} />} label="Home" currentPath={location.pathname} />
+      <NavItem to="/app/projects" icon={<Briefcase size={20} />} label="Projects" currentPath={location.pathname} />
       <NavGroup
         icon={<Leaf size={20} />}
         label="Plant Trackers"
         isOpen={isGroupOpen('plantTrackers')}
-        onClick={() => toggleGroup('plantTrackers', '/plants')}
+        onClick={() => toggleGroup('plantTrackers', '/app/plants')}
         currentPath={location.pathname}
       >
-        <NavItem to="/plants" label="Plant Varieties" currentPath={location.pathname} />
-        <NavItem to="/plant-locations" label="Plant Locations" currentPath={location.pathname} />
-        <NavItem to="/plantings" label="Plantings" currentPath={location.pathname} />
+        <NavItem to="/app/plants" label="Plant Varieties" currentPath={location.pathname} />
+        <NavItem to="/app/plant-locations" label="Plant Locations" currentPath={location.pathname} />
+        <NavItem to="/app/plantings" label="Plantings" currentPath={location.pathname} />
       </NavGroup>
       <NavGroup
         icon={<DollarSign size={20} />}
         label="Accounting"
         isOpen={isGroupOpen('accounting')}
-        onClick={() => toggleGroup('accounting', '/transactions')}
+        onClick={() => toggleGroup('accounting', '/app/transactions')}
         currentPath={location.pathname}
       >
-        <NavItem to="/transactions" label="Transactions" currentPath={location.pathname} />
-        <NavItem to="/pl-statement" label="P&L Statement" currentPath={location.pathname} />
-        <NavItem to="/cash-flow" label="Cash Flow" currentPath={location.pathname} />
-        <NavItem to="/balance-sheet" label="Balance Sheet" currentPath={location.pathname} />
-        <NavItem to="/budgeting" label="Budgeting" currentPath={location.pathname} />
+        <NavItem to="/app/transactions" label="Transactions" currentPath={location.pathname} />
+        <NavItem to="/app/pl-statement" label="P&L Statement" currentPath={location.pathname} />
+        <NavItem to="/app/cash-flow" label="Cash Flow" currentPath={location.pathname} />
+        <NavItem to="/app/balance-sheet" label="Balance Sheet" currentPath={location.pathname} />
+        <NavItem to="/app/budgeting" label="Budgeting" currentPath={location.pathname} />
       </NavGroup>
       <NavGroup
         icon={<ShoppingBag size={20} />}
         label="Market"
         isOpen={isGroupOpen('market')}
-        onClick={() => toggleGroup('market', '/market-dashboard')}
+        onClick={() => toggleGroup('market', '/app/market-dashboard')}
         currentPath={location.pathname}
       >
-        <NavItem to="/market-dashboard" label="Dashboard" currentPath={location.pathname} />
-        <NavItem to="/products" label="Products" currentPath={location.pathname} />
-        <NavItem to="/online-store" label="Online Store" currentPath={location.pathname} />
-        <NavItem to="/pickup-locations" label="Pickup Locations" currentPath={location.pathname} />
+        <NavItem to="/app/market-dashboard" label="Dashboard" currentPath={location.pathname} />
+        <NavItem to="/app/products" label="Products" currentPath={location.pathname} />
+        <NavItem to="/app/online-store" label="Online Store" currentPath={location.pathname} />
+        <NavItem to="/app/pickup-locations" label="Pickup Locations" currentPath={location.pathname} />
       </NavGroup>
-      <NavItem to="/contacts" icon={<Users size={20} />} label="Contacts" currentPath={location.pathname} />
-      <NavItem to="/account-settings" icon={<Settings size={20} />} label="Account Settings" currentPath={location.pathname} />
-      <NavItem to="/user-management" icon={<Users size={20} />} label="User Management" currentPath={location.pathname} />
+      <NavItem to="/app/contacts" icon={<Users size={20} />} label="Contacts" currentPath={location.pathname} />
+      <NavItem to="/app/account-settings" icon={<Settings size={20} />} label="Account Settings" currentPath={location.pathname} />
+      <NavItem to="/app/user-management" icon={<Users size={20} />} label="User Management" currentPath={location.pathname} />
     </ul>
   );
 

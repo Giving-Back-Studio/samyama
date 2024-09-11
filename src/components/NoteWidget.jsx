@@ -1,49 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, Save } from "lucide-react";
+import RichTextEditor from './RichTextEditor';
 
 const NoteWidget = () => {
-  const [notes, setNotes] = useState([]);
-  const [currentNote, setCurrentNote] = useState('');
+  const [note, setNote] = useState('');
 
-  const handleSaveNote = () => {
-    if (currentNote.trim()) {
-      setNotes([...notes, { id: Date.now(), content: currentNote }]);
-      setCurrentNote('');
+  useEffect(() => {
+    const savedNote = localStorage.getItem('quickNote');
+    if (savedNote) {
+      setNote(savedNote);
     }
+  }, []);
+
+  const handleNoteChange = (content) => {
+    setNote(content);
+    localStorage.setItem('quickNote', content);
   };
 
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
-        <CardTitle className="flex justify-between items-center">
-          <span>Quick Notes</span>
-          <Button variant="outline" size="sm" onClick={() => setCurrentNote('')}>
-            <PlusCircle className="h-4 w-4 mr-2" />
-            New Note
-          </Button>
-        </CardTitle>
+        <CardTitle>Quick Notes</CardTitle>
       </CardHeader>
-      <CardContent className="flex-grow flex flex-col">
-        <Textarea
-          placeholder="Type your note here..."
-          value={currentNote}
-          onChange={(e) => setCurrentNote(e.target.value)}
-          className="flex-grow mb-4 resize-none"
-        />
-        <Button onClick={handleSaveNote} disabled={!currentNote.trim()}>
-          <Save className="h-4 w-4 mr-2" />
-          Save Note
-        </Button>
-        <div className="mt-4 space-y-2 overflow-y-auto max-h-60">
-          {notes.map((note) => (
-            <div key={note.id} className="bg-gray-100 p-2 rounded">
-              {note.content}
-            </div>
-          ))}
-        </div>
+      <CardContent className="flex-grow">
+        <RichTextEditor value={note} onChange={handleNoteChange} />
       </CardContent>
     </Card>
   );
