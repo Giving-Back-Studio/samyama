@@ -4,8 +4,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../integrations/supabase/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProjectTable from './ProjectTable';
+import ProjectBoard from './ProjectBoard';
 import ProjectDialog from './ProjectDialog';
+import { DragDropContext } from '@hello-pangea/dnd';
 
 const fetchProjects = async () => {
   const { data, error } = await supabase.from('projects').select('*');
@@ -17,6 +20,7 @@ const Projects = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
+  const [viewMode, setViewMode] = useState('board');
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -38,6 +42,21 @@ const Projects = () => {
     },
   });
 
+  const updateProjectMutation = useMutation({
+    mutationFn: async (updatedProject) => {
+      const { data, error } = await supabase
+        .from('projects')
+        .update(updatedProject)
+        .eq('id', updatedProject.id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries('projects');
+    },
+  });
+
   const handleAddProject = (project) => {
     addProjectMutation.mutate(project);
   };
@@ -49,6 +68,26 @@ const Projects = () => {
       setSortBy(field);
       setSortOrder('asc');
     }
+  };
+
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+
+    const { source, destination, draggableId } = result;
+    const updatedProjects = Array.from(projects);
+    const [reorderedProject] = updatedProjects.splice(source.index, 1);
+    updatedProjects.splice(destination.index, 0, reorderedProject);
+
+    // Update project status if moved between columns
+    if (source.droppableId !== destination.droppableId) {
+      const updatedProject = {
+        ...reorderedProject,
+        status: destination.droppableId,
+      };
+      updateProjectMutation.mutate(updatedProject);
+    }
+
+    queryClient.setQueryData(['projects'], updatedProjects);
   };
 
   const sortedProjects = projects?.slice().sort((a, b) => {
@@ -66,20 +105,36 @@ const Projects = () => {
         <h1 className="text-3xl font-bold">Projects</h1>
         <Button onClick={() => setIsDialogOpen(true)}>Add Project</Button>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Project List</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ProjectTable
-            projects={sortedProjects}
-            onViewDetails={(project) => navigate(`/app/projects/${project.id}`)}
-            sortBy={sortBy}
-            sortOrder={sortOrder}
-            onSort={handleSort}
-          />
-        </CardContent>
-      </Card>
+      <Tabs value={viewMode} onValueChange={setViewMode}>
+        <TabsList>
+          <TabsTrigger value="board">Board View</TabsTrigger>
+          <TabsTrigger value="list">List View</TabsTrigger>
+        </TabsList>
+        <TabsContent value="board">
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <ProjectBoard
+              projects={sortedProjects}
+              onViewDetails={(project) => navigate(`/app/projects/${project.id}`)}
+            />
+          </DragDropContext>
+        </TabsContent>
+        <TabsContent value="list">
+          <Card>
+            <CardHeader>
+              <CardTitle>Project List</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ProjectTable
+                projects={sortedProjects}
+                onViewDetails={(project) => navigate(`/app/projects/${project.id}`)}
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={handleSort}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
       {isDialogOpen && (
         <ProjectDialog
           onClose={() => setIsDialogOpen(false)}
