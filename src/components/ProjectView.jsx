@@ -5,6 +5,7 @@ import { supabase } from '../integrations/supabase/supabase';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import NextActions from './NextActions';
+import { ErrorBoundary } from 'react-error-boundary';
 
 const fetchProject = async (id) => {
   if (!id) throw new Error('Project ID is required');
@@ -18,7 +19,15 @@ const fetchProject = async (id) => {
   return data;
 };
 
-const ProjectView = () => {
+const ErrorFallback = ({ error, resetErrorBoundary }) => (
+  <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+    <h2 className="text-lg font-semibold mb-2">Oops! Something went wrong:</h2>
+    <pre className="text-sm overflow-auto">{error.message}</pre>
+    <Button onClick={resetErrorBoundary} className="mt-4">Try again</Button>
+  </div>
+);
+
+const ProjectViewContent = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -30,7 +39,10 @@ const ProjectView = () => {
   });
 
   if (isLoading) return <div>Loading project...</div>;
-  if (error) return <div>Error loading project: {error.message}</div>;
+  if (error) {
+    console.error('Error in ProjectView:', error);
+    return <div>Error loading project: {error.message}</div>;
+  }
   if (!project) return <div>Project not found</div>;
 
   return (
@@ -47,23 +59,23 @@ const ProjectView = () => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <h3 className="font-semibold">Description</h3>
-              <p>{project.description}</p>
+              <p>{project.description || 'No description available'}</p>
             </div>
             <div>
               <h3 className="font-semibold">Status</h3>
-              <p>{project.status}</p>
+              <p>{project.status || 'Not set'}</p>
             </div>
             <div>
               <h3 className="font-semibold">Start Date</h3>
-              <p>{project.start_date}</p>
+              <p>{project.start_date || 'Not set'}</p>
             </div>
             <div>
               <h3 className="font-semibold">End Date</h3>
-              <p>{project.end_date}</p>
+              <p>{project.end_date || 'Not set'}</p>
             </div>
             <div>
               <h3 className="font-semibold">Assigned To</h3>
-              <p>{project.assigned_to}</p>
+              <p>{project.assigned_to || 'Not assigned'}</p>
             </div>
           </div>
         </CardContent>
@@ -79,5 +91,11 @@ const ProjectView = () => {
     </div>
   );
 };
+
+const ProjectView = () => (
+  <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => window.location.reload()}>
+    <ProjectViewContent />
+  </ErrorBoundary>
+);
 
 export default ProjectView;
