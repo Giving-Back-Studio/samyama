@@ -7,24 +7,28 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 import { useForm, Controller } from 'react-hook-form';
 
 const ProjectDialog = ({ project, onClose, onUpdate }) => {
   const { control, handleSubmit } = useForm({
     defaultValues: {
       ...project,
-      startDate: new Date(project.startDate),
-      endDate: new Date(project.endDate),
+      startDate: project.startDate ? parseISO(project.startDate) : null,
+      endDate: project.endDate ? parseISO(project.endDate) : null,
     }
   });
 
   const onSubmit = (data) => {
     onUpdate({
       ...data,
-      startDate: format(data.startDate, 'yyyy-MM-dd'),
-      endDate: format(data.endDate, 'yyyy-MM-dd'),
+      startDate: data.startDate && isValid(data.startDate) ? format(data.startDate, 'yyyy-MM-dd') : null,
+      endDate: data.endDate && isValid(data.endDate) ? format(data.endDate, 'yyyy-MM-dd') : null,
     });
+  };
+
+  const formatDate = (date) => {
+    return date && isValid(date) ? format(date, "PPP") : "Pick a date";
   };
 
   return (
@@ -88,7 +92,7 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
                         className={`col-span-3 justify-start text-left font-normal`}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                        {formatDate(field.value)}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
@@ -116,7 +120,7 @@ const ProjectDialog = ({ project, onClose, onUpdate }) => {
                         className={`col-span-3 justify-start text-left font-normal`}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                        {formatDate(field.value)}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
