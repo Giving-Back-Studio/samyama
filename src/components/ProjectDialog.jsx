@@ -12,7 +12,7 @@ import { format, isValid, parseISO } from "date-fns";
 import NextActions from './NextActions';
 import UserSelect from './UserSelect';
 
-const ProjectDialog = ({ project, onClose, onUpdate, users }) => {
+const ProjectDialog = ({ project, onClose, onUpdate, users = [] }) => {
   const { control, handleSubmit } = useForm({
     defaultValues: {
       ...project,

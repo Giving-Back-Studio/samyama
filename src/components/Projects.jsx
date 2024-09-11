@@ -61,7 +61,9 @@ const Projects = () => {
   };
 
   const filteredAndSortedProjects = useMemo(() => {
-    let filtered = projects || [];
+    if (!projects) return [];
+
+    let filtered = projects;
 
     if (filterMyProjects) {
       filtered = filtered.filter(p => p.assignedTo === "currentUser"); // Replace with actual user ID
@@ -70,7 +72,7 @@ const Projects = () => {
     if (searchTerm) {
       filtered = filtered.filter(p => 
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.description.toLowerCase().includes(searchTerm.toLowerCase())
+        (p.description && p.description.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
@@ -140,7 +142,7 @@ const Projects = () => {
         <TabsContent value="list">
           <ProjectTable
             projects={filteredAndSortedProjects}
-            onProjectClick={setSelectedProject}
+            onViewDetails={setSelectedProject}
             sortBy={sortBy}
             sortOrder={sortOrder}
             onSort={handleSort}
@@ -160,6 +162,7 @@ const Projects = () => {
           project={selectedProject}
           onClose={() => setSelectedProject(null)}
           onUpdate={updateProjectMutation.mutate}
+          users={[]} // Add this line to pass an empty array of users
         />
       )}
     </div>
