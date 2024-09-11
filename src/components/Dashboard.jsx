@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DragDropContext } from '@hello-pangea/dnd';
+import { DragDropContext, Droppable } from '@hello-pangea/dnd';
 import ProjectList from './ProjectList';
 import ActivityList from './ActivityList';
 import ProjectDialog from './ProjectDialog';
 import NoteWidget from './NoteWidget';
+import NextActions from './NextActions';
 
 const fetchProjects = async () => {
   const storedProjects = localStorage.getItem('projects');
@@ -42,7 +43,20 @@ const Dashboard = () => {
   };
 
   const onDragEnd = (result) => {
-    // Implement drag and drop logic here
+    const { source, destination, draggableId } = result;
+    if (!destination) return;
+
+    const updatedProjects = Array.from(projects);
+    const [reorderedProject] = updatedProjects.splice(source.index, 1);
+    updatedProjects.splice(destination.index, 0, reorderedProject);
+
+    if (source.droppableId !== destination.droppableId) {
+      const draggedProject = updatedProjects.find(p => p.id.toString() === draggableId);
+      draggedProject.status = destination.droppableId;
+    }
+
+    localStorage.setItem('projects', JSON.stringify(updatedProjects));
+    queryClient.setQueryData(['projects'], updatedProjects);
   };
 
   if (isLoadingProjects || isLoadingActivities) {
@@ -59,21 +73,22 @@ const Dashboard = () => {
               <CardTitle>My Projects</CardTitle>
             </CardHeader>
             <CardContent>
-              <ProjectList
-                projects={projects}
-                status="In Progress"
-                onViewDetails={handleViewDetails}
-              />
-              <ProjectList
-                projects={projects}
-                status="To Do"
-                onViewDetails={handleViewDetails}
-              />
-              <ProjectList
-                projects={projects}
-                status="Done"
-                onViewDetails={handleViewDetails}
-              />
+              {['To Do', 'In Progress', 'Done'].map((status) => (
+                <div key={status}>
+                  <h3 className="font-semibold mb-2">{status}</h3>
+                  <Droppable droppableId={status}>
+                    {(provided) => (
+                      <div {...provided.droppableProps} ref={provided.innerRef}>
+                        <ProjectList
+                          projects={projects.filter(p => p.status === status)}
+                          onViewDetails={handleViewDetails}
+                        />
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </div>
+              ))}
             </CardContent>
           </Card>
         </DragDropContext>
