@@ -1,6 +1,6 @@
 import React from 'react';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Layout from "./components/Layout";
@@ -51,7 +51,7 @@ const App = () => (
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/onboarding" element={<OnboardingPage />} />
               <Route path="/" element={<Layout />}>
-                <Route index element={<Projects />} />
+                <Route index element={<Navigate to="/projects" replace />} />
                 <Route path="projects" element={<Projects />} />
                 <Route path="plants" element={<Plants />} />
                 <Route path="plant-locations" element={<PlantLocations />} />
