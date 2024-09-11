@@ -1,8 +1,6 @@
-import { HomeIcon, Leaf, DollarSign, ShoppingBag, Users, Settings } from "lucide-react";
-import LandingPage from "./components/LandingPage";
+import { Briefcase, Leaf, DollarSign, ShoppingBag, Users, Settings } from "lucide-react";
 import SignupPage from "./components/SignupPage";
 import OnboardingPage from "./components/OnboardingPage";
-import Dashboard from "./components/Dashboard";
 import Projects from "./components/Projects";
 import Plants from "./components/Plants";
 import PlantLocations from "./components/PlantLocations";
@@ -22,69 +20,62 @@ import UserManagement from "./components/UserManagement";
 
 export const navItems = [
   {
-    title: "Home",
-    to: "/app",
-    icon: <HomeIcon className="h-4 w-4" />,
-    page: <Dashboard />,
-  },
-  {
     title: "Projects",
-    to: "/app/projects",
-    icon: <HomeIcon className="h-4 w-4" />,
+    to: "/projects",
+    icon: <Briefcase className="h-4 w-4" />,
     page: <Projects />,
   },
   {
     title: "Plant Trackers",
     icon: <Leaf className="h-4 w-4" />,
     children: [
-      { title: "Plant Varieties", to: "/app/plants", page: <Plants /> },
-      { title: "Plant Locations", to: "/app/plant-locations", page: <PlantLocations /> },
-      { title: "Plantings", to: "/app/plantings", page: <Plantings /> },
+      { title: "Plant Varieties", to: "/plants", page: <Plants /> },
+      { title: "Plant Locations", to: "/plant-locations", page: <PlantLocations /> },
+      { title: "Plantings", to: "/plantings", page: <Plantings /> },
     ],
   },
   {
     title: "Accounting",
     icon: <DollarSign className="h-4 w-4" />,
     children: [
-      { title: "Transactions", to: "/app/transactions", page: <Transactions /> },
-      { title: "P&L Statement", to: "/app/pl-statement", page: <PLStatement /> },
-      { title: "Cash Flow", to: "/app/cash-flow", page: <CashFlow /> },
-      { title: "Balance Sheet", to: "/app/balance-sheet", page: <BalanceSheet /> },
-      { title: "Budgeting", to: "/app/budgeting", page: <Budgeting /> },
+      { title: "Transactions", to: "/transactions", page: <Transactions /> },
+      { title: "P&L Statement", to: "/pl-statement", page: <PLStatement /> },
+      { title: "Cash Flow", to: "/cash-flow", page: <CashFlow /> },
+      { title: "Balance Sheet", to: "/balance-sheet", page: <BalanceSheet /> },
+      { title: "Budgeting", to: "/budgeting", page: <Budgeting /> },
     ],
   },
   {
     title: "Market",
     icon: <ShoppingBag className="h-4 w-4" />,
     children: [
-      { title: "Dashboard", to: "/app/market-dashboard", page: <MarketDashboard /> },
-      { title: "Products", to: "/app/products", page: <Products /> },
-      { title: "Online Store", to: "/app/online-store", page: <OnlineStore /> },
-      { title: "Pickup Locations", to: "/app/pickup-locations", page: <PickupLocations /> },
+      { title: "Dashboard", to: "/market-dashboard", page: <MarketDashboard /> },
+      { title: "Products", to: "/products", page: <Products /> },
+      { title: "Online Store", to: "/online-store", page: <OnlineStore /> },
+      { title: "Pickup Locations", to: "/pickup-locations", page: <PickupLocations /> },
     ],
   },
   {
     title: "Contacts",
-    to: "/app/contacts",
+    to: "/contacts",
     icon: <Users className="h-4 w-4" />,
     page: <Contacts />,
   },
   {
     title: "Account Settings",
-    to: "/app/account-settings",
+    to: "/account-settings",
     icon: <Settings className="h-4 w-4" />,
     page: <AccountSettings />,
   },
   {
     title: "User Management",
-    to: "/app/user-management",
+    to: "/user-management",
     icon: <Users className="h-4 w-4" />,
     page: <UserManagement />,
   },
 ];
 
 export const publicRoutes = [
-  { path: "/", element: <LandingPage /> },
   { path: "/signup", element: <SignupPage /> },
   { path: "/onboarding", element: <OnboardingPage /> },
 ];

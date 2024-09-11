@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PlusCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { PlusCircle, Search } from "lucide-react";
 import ProjectList from './ProjectList';
 import ProjectTable from './ProjectTable';
 import ProjectForm from './ProjectForm';
@@ -21,6 +23,9 @@ const Projects = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [activeTab, setActiveTab] = useState("board");
   const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [filterMyProjects, setFilterMyProjects] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const queryClient = useQueryClient();
 
   const { data: projects, isLoading, error } = useQuery({
@@ -71,16 +76,35 @@ const Projects = () => {
     queryClient.setQueryData(['projects'], updatedProjects);
   };
 
-  const sortedProjects = projects?.slice().sort((a, b) => {
-    if (sortBy === "createdAt") {
-      return new Date(b.createdAt) - new Date(a.createdAt);
-    } else if (sortBy === "startDate") {
-      return new Date(a.startDate) - new Date(b.startDate);
-    } else if (sortBy === "endDate") {
-      return new Date(a.endDate) - new Date(b.endDate);
+  const filteredAndSortedProjects = useMemo(() => {
+    let filtered = projects || [];
+
+    if (filterMyProjects) {
+      filtered = filtered.filter(p => p.assignedTo === "currentUser"); // Replace with actual user ID
     }
-    return 0;
-  });
+
+    if (searchTerm) {
+      filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return filtered.sort((a, b) => {
+      if (a[sortBy] < b[sortBy]) return sortOrder === "asc" ? -1 : 1;
+      if (a[sortBy] > b[sortBy]) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [projects, filterMyProjects, searchTerm, sortBy, sortOrder]);
+
+  const handleSort = (field) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(field);
+      setSortOrder("asc");
+    }
+  };
 
   if (isLoading) return <div>Loading projects...</div>;
   if (error) return <div>Error loading projects: {error.message}</div>;
@@ -92,6 +116,27 @@ const Projects = () => {
         <Button onClick={() => setIsAddDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" /> Add Project
         </Button>
+      </div>
+
+      <div className="flex space-x-4 items-center">
+        <div className="relative flex-grow">
+          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Search projects..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="myProjects"
+            checked={filterMyProjects}
+            onCheckedChange={setFilterMyProjects}
+          />
+          <label htmlFor="myProjects">My Projects Only</label>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -113,7 +158,7 @@ const Projects = () => {
                       {(provided) => (
                         <div {...provided.droppableProps} ref={provided.innerRef}>
                           <ProjectList
-                            projects={sortedProjects.filter(p => p.status === status)}
+                            projects={filteredAndSortedProjects.filter(p => p.status === status)}
                             onViewDetails={setSelectedProject}
                           />
                           {provided.placeholder}
@@ -128,19 +173,13 @@ const Projects = () => {
         </TabsContent>
 
         <TabsContent value="list">
-          <div className="mb-4">
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="createdAt">Creation Date</SelectItem>
-                <SelectItem value="startDate">Start Date</SelectItem>
-                <SelectItem value="endDate">End Date</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <ProjectTable projects={sortedProjects} onViewDetails={setSelectedProject} />
+          <ProjectTable
+            projects={filteredAndSortedProjects}
+            onViewDetails={setSelectedProject}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSort={handleSort}
+          />
         </TabsContent>
       </Tabs>
 

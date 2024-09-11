@@ -4,10 +4,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Layout from "./components/Layout";
-import LandingPage from "./components/LandingPage";
 import SignupPage from "./components/SignupPage";
 import OnboardingPage from "./components/OnboardingPage";
-import Dashboard from "./components/Dashboard";
 import Projects from "./components/Projects";
 import Plants from "./components/Plants";
 import PlantLocations from "./components/PlantLocations";
@@ -50,11 +48,10 @@ const App = () => (
           <Toaster />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<LandingPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/onboarding" element={<OnboardingPage />} />
-              <Route path="/app" element={<Layout />}>
-                <Route index element={<Dashboard />} />
+              <Route path="/" element={<Layout />}>
+                <Route index element={<Projects />} />
                 <Route path="projects" element={<Projects />} />
                 <Route path="plants" element={<Plants />} />
                 <Route path="plant-locations" element={<PlantLocations />} />
