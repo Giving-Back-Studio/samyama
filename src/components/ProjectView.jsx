@@ -10,21 +10,26 @@ import { ErrorBoundary } from 'react-error-boundary';
 const fetchProject = async (id) => {
   console.log('Fetching project with id:', id);
   if (!id) throw new Error('Project ID is required');
-  const { data, error } = await supabase
-    .from('projects')
-    .select('*')
-    .eq('id', id)
-    .single();
-  if (error) {
-    console.error('Supabase error:', error);
+  try {
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('id', id)
+      .single();
+    if (error) {
+      console.error('Supabase error:', error);
+      throw error;
+    }
+    if (!data) {
+      console.error('Project not found for id:', id);
+      throw new Error('Project not found');
+    }
+    console.log('Fetched project data:', data);
+    return data;
+  } catch (error) {
+    console.error('Error in fetchProject:', error);
     throw error;
   }
-  if (!data) {
-    console.error('Project not found for id:', id);
-    throw new Error('Project not found');
-  }
-  console.log('Fetched project data:', data);
-  return data;
 };
 
 const ErrorFallback = ({ error, resetErrorBoundary }) => (
