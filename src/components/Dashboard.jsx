@@ -6,8 +6,6 @@ import ProjectList from './ProjectList';
 import ActivityList from './ActivityList';
 import ProjectDialog from './ProjectDialog';
 import NoteWidget from './NoteWidget';
-import TaskList from './TaskList';
-import WeatherWidget from './WeatherWidget';
 
 const fetchProjects = async () => {
   const storedProjects = localStorage.getItem('projects');
@@ -43,6 +41,10 @@ const Dashboard = () => {
     setSelectedProject(null);
   };
 
+  const onDragEnd = (result) => {
+    // Implement drag and drop logic here
+  };
+
   if (isLoadingProjects || isLoadingActivities) {
     return <div className="p-4">Loading dashboard...</div>;
   }
@@ -51,22 +53,12 @@ const Dashboard = () => {
     <div className="space-y-6 p-4">
       <h1 className="text-2xl font-bold">Dashboard</h1>
       <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Overview</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <WeatherWidget />
-            <TaskList />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>My Projects</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DragDropContext onDragEnd={() => {}}>
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Card>
+            <CardHeader>
+              <CardTitle>My Projects</CardTitle>
+            </CardHeader>
+            <CardContent>
               <ProjectList
                 projects={projects}
                 status="In Progress"
@@ -77,9 +69,14 @@ const Dashboard = () => {
                 status="To Do"
                 onViewDetails={handleViewDetails}
               />
-            </DragDropContext>
-          </CardContent>
-        </Card>
+              <ProjectList
+                projects={projects}
+                status="Done"
+                onViewDetails={handleViewDetails}
+              />
+            </CardContent>
+          </Card>
+        </DragDropContext>
 
         <ActivityList activities={activities} />
 
