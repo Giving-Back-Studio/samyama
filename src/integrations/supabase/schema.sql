@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS projects (
     assigned_to UUID,
     start_date DATE,
     end_date DATE,
+    next_actions JSONB DEFAULT '[]',
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -75,3 +76,11 @@ FOR EACH ROW EXECUTE FUNCTION update_modified_column();
 CREATE TRIGGER update_farmers_modtime
 BEFORE UPDATE ON farmers
 FOR EACH ROW EXECUTE FUNCTION update_modified_column();
+
+-- Add next_actions column to projects table if it doesn't exist
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'projects' AND column_name = 'next_actions') THEN
+        ALTER TABLE projects ADD COLUMN next_actions JSONB DEFAULT '[]';
+    END IF;
+END $$;
