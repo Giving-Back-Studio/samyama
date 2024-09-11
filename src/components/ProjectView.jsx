@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../integrations/supabase/supabase';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,14 +8,22 @@ import NextActions from './NextActions';
 import { ErrorBoundary } from 'react-error-boundary';
 
 const fetchProject = async (id) => {
+  console.log('Fetching project with id:', id);
   if (!id) throw new Error('Project ID is required');
   const { data, error } = await supabase
     .from('projects')
     .select('*')
     .eq('id', id)
     .single();
-  if (error) throw error;
-  if (!data) throw new Error('Project not found');
+  if (error) {
+    console.error('Supabase error:', error);
+    throw error;
+  }
+  if (!data) {
+    console.error('Project not found for id:', id);
+    throw new Error('Project not found');
+  }
+  console.log('Fetched project data:', data);
   return data;
 };
 
@@ -30,6 +38,10 @@ const ErrorFallback = ({ error, resetErrorBoundary }) => (
 const ProjectViewContent = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  console.log('ProjectViewContent rendered. ID:', id);
+  console.log('QueryClient:', queryClient);
 
   const { data: project, isLoading, error } = useQuery({
     queryKey: ['project', id],
@@ -37,6 +49,8 @@ const ProjectViewContent = () => {
     retry: 1,
     refetchOnWindowFocus: false,
   });
+
+  console.log('Query result:', { project, isLoading, error });
 
   if (isLoading) return <div>Loading project...</div>;
   if (error) {
@@ -92,10 +106,13 @@ const ProjectViewContent = () => {
   );
 };
 
-const ProjectView = () => (
-  <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => window.location.reload()}>
-    <ProjectViewContent />
-  </ErrorBoundary>
-);
+const ProjectView = () => {
+  console.log('ProjectView component rendered');
+  return (
+    <ErrorBoundary FallbackComponent={ErrorFallback} onReset={() => window.location.reload()}>
+      <ProjectViewContent />
+    </ErrorBoundary>
+  );
+};
 
 export default ProjectView;
