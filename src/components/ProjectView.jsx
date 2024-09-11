@@ -23,10 +23,13 @@ const ProjectView = () => {
   const { data: project, isLoading, error } = useQuery({
     queryKey: ['project', id],
     queryFn: () => fetchProject(id),
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
 
   if (isLoading) return <div>Loading project...</div>;
   if (error) return <div>Error loading project: {error.message}</div>;
+  if (!project) return <div>Project not found</div>;
 
   return (
     <div className="space-y-6">
@@ -50,15 +53,15 @@ const ProjectView = () => {
             </div>
             <div>
               <h3 className="font-semibold">Start Date</h3>
-              <p>{project.startDate}</p>
+              <p>{project.start_date}</p>
             </div>
             <div>
               <h3 className="font-semibold">End Date</h3>
-              <p>{project.endDate}</p>
+              <p>{project.end_date}</p>
             </div>
             <div>
               <h3 className="font-semibold">Assigned To</h3>
-              <p>{project.assignedTo}</p>
+              <p>{project.assigned_to}</p>
             </div>
           </div>
         </CardContent>
