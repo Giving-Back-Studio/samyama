@@ -15,7 +15,7 @@ export const useProjects = () => {
     queryFn: fetchProjects,
   });
 
-  const addProjectMutation = useMutation({
+  const addProject = useMutation({
     mutationFn: async (newProject) => {
       const { data, error } = await supabase.from('projects').insert(newProject).single();
       if (error) throw error;
@@ -26,7 +26,7 @@ export const useProjects = () => {
     },
   });
 
-  const updateProjectMutation = useMutation({
+  const updateProject = useMutation({
     mutationFn: async (updatedProject) => {
       const { data, error } = await supabase
         .from('projects')
@@ -45,7 +45,7 @@ export const useProjects = () => {
     projects,
     isLoading,
     error,
-    addProjectMutation,
-    updateProjectMutation,
+    addProject: addProject.mutate,
+    updateProject: updateProject.mutate,
   };
 };

@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,6 @@ import ProjectList from './ProjectList';
 import ProjectTable from './ProjectTable';
 import ProjectForm from './ProjectForm';
 import ProjectDialog from './ProjectDialog';
-import { fetchProjects, addProject, updateProject } from '../utils/projectUtils';
 import { useProjects } from '../hooks/useProjects';
 
 const Projects = () => {
@@ -23,7 +21,7 @@ const Projects = () => {
   const [filterMyProjects, setFilterMyProjects] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   
-  const { projects, isLoading, error, addProjectMutation, updateProjectMutation } = useProjects();
+  const { projects, isLoading, error, addProject, updateProject } = useProjects();
 
   const filteredAndSortedProjects = useMemo(() => {
     if (!projects) return [];
@@ -69,7 +67,7 @@ const Projects = () => {
       const draggedProject = updatedProjects.find(p => p.id.toString() === draggableId);
       if (draggedProject) {
         draggedProject.status = destination.droppableId;
-        updateProjectMutation.mutate(draggedProject);
+        updateProject(draggedProject);
       }
     }
   };
@@ -135,7 +133,7 @@ const Projects = () => {
       {isAddDialogOpen && (
         <ProjectForm
           onClose={() => setIsAddDialogOpen(false)}
-          onSubmit={addProjectMutation.mutate}
+          onSubmit={addProject}
         />
       )}
 
@@ -143,7 +141,7 @@ const Projects = () => {
         <ProjectDialog
           project={selectedProject}
           onClose={() => setSelectedProject(null)}
-          onUpdate={updateProjectMutation.mutate}
+          onUpdate={updateProject}
           users={[]} // Add this line to pass an empty array of users
         />
       )}
