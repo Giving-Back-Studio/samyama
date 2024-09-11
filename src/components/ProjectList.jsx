@@ -1,10 +1,12 @@
 import React from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, ArrowRight, ChevronDown, ChevronRight } from "lucide-react";
+import { CheckCircle, ArrowRight } from "lucide-react";
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 
 const ProjectList = ({ projects, status, openProject, setOpenProject, toggleActionCompletion, onViewDetails }) => {
+  const filteredProjects = projects.filter(project => project.status === status);
+
   return (
     <div>
       <h3 className="text-lg font-semibold mb-2">{status}</h3>
@@ -12,14 +14,13 @@ const ProjectList = ({ projects, status, openProject, setOpenProject, toggleActi
         {(provided) => (
           <div {...provided.droppableProps} ref={provided.innerRef}>
             <Accordion type="single" collapsible value={openProject} onValueChange={setOpenProject}>
-              {projects.map((project, index) => (
+              {filteredProjects.map((project, index) => (
                 <Draggable key={project.id} draggableId={project.id.toString()} index={index}>
                   {(provided) => (
                     <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
                       <AccordionItem value={project.id.toString()}>
                         <AccordionTrigger className="hover:no-underline">
                           <div className="flex items-center w-full">
-                            <ChevronRight className="h-4 w-4 mr-2 transition-transform duration-200" />
                             <span className="text-sm md:text-base text-left flex-grow">{project.name}</span>
                             <div className="flex items-center space-x-2 ml-auto">
                               {status === 'In Progress' ? (

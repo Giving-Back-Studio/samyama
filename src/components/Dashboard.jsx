@@ -50,9 +50,9 @@ const Dashboard = () => {
   });
 
   const updateProjectMutation = useMutation({
-    mutationFn: (updatedProjects) => {
-      // Mock function to update projects
-      return Promise.resolve(updatedProjects);
+    mutationFn: (updatedProject) => {
+      // Mock function to update a project
+      return Promise.resolve(updatedProject);
     },
     onSuccess: () => {
       queryClient.invalidateQueries('projects');
@@ -106,7 +106,7 @@ const Dashboard = () => {
   };
 
   const handleUpdateProject = (updatedProject) => {
-    updateProjectMutation.mutate(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
+    updateProjectMutation.mutate(updatedProject);
     setSelectedProject(null);
   };
 
@@ -130,7 +130,7 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <ProjectList
-                  projects={projects.filter(p => p.status === 'In Progress')}
+                  projects={projects}
                   status="In Progress"
                   openProject={openProject}
                   setOpenProject={setOpenProject}
@@ -138,7 +138,7 @@ const Dashboard = () => {
                   onViewDetails={handleViewDetails}
                 />
                 <ProjectList
-                  projects={projects.filter(p => p.status === 'To Do')}
+                  projects={projects}
                   status="To Do"
                   openProject={openProject}
                   setOpenProject={setOpenProject}
