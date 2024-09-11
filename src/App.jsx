@@ -25,7 +25,14 @@ import Contacts from "./components/Contacts";
 import AccountSettings from "./components/AccountSettings";
 import UserManagement from "./components/UserManagement";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <React.StrictMode>
