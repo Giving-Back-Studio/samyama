@@ -145,30 +145,11 @@ const Projects = () => {
         </TabsList>
 
         <TabsContent value="board">
-          <DragDropContext onDragEnd={onDragEnd}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {['To Do', 'In Progress', 'Done'].map((status) => (
-                <Card key={status}>
-                  <CardHeader>
-                    <CardTitle>{status}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Droppable droppableId={status}>
-                      {(provided) => (
-                        <div {...provided.droppableProps} ref={provided.innerRef}>
-                          <ProjectList
-                            projects={filteredAndSortedProjects.filter(p => p.status === status)}
-                            onViewDetails={setSelectedProject}
-                          />
-                          {provided.placeholder}
-                        </div>
-                      )}
-                    </Droppable>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </DragDropContext>
+          <ProjectBoard
+            projects={filteredAndSortedProjects}
+            onDragEnd={onDragEnd}
+            onViewDetails={setSelectedProject}
+          />
         </TabsContent>
 
         <TabsContent value="list">
@@ -199,5 +180,32 @@ const Projects = () => {
     </div>
   );
 };
+
+const ProjectBoard = ({ projects, onDragEnd, onViewDetails }) => (
+  <DragDropContext onDragEnd={onDragEnd}>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {['To Do', 'In Progress', 'Done'].map((status) => (
+        <Card key={status}>
+          <CardHeader>
+            <CardTitle>{status}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Droppable droppableId={status}>
+              {(provided) => (
+                <div {...provided.droppableProps} ref={provided.innerRef}>
+                  <ProjectList
+                    projects={projects.filter(p => p.status === status)}
+                    onViewDetails={onViewDetails}
+                  />
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  </DragDropContext>
+);
 
 export default Projects;
