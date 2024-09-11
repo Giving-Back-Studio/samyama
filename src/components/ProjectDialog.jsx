@@ -4,15 +4,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Trash2 } from "lucide-react";
 import { format, isValid, parseISO } from "date-fns";
 import NextActions from './NextActions';
 import UserSelect from './UserSelect';
+import RichTextEditor from './RichTextEditor';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
-const ProjectDialog = ({ project, onClose, onUpdate, users = [] }) => {
+const ProjectDialog = ({ project, onClose, onUpdate, onDelete, users = [] }) => {
   const { control, handleSubmit } = useForm({
     defaultValues: {
       ...project,
@@ -41,7 +42,16 @@ const ProjectDialog = ({ project, onClose, onUpdate, users = [] }) => {
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-4">
               <FormField name="name" control={control} label="Name" />
-              <FormField name="description" control={control} label="Description" as={Textarea} />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <Controller
+                  name="description"
+                  control={control}
+                  render={({ field }) => (
+                    <RichTextEditor value={field.value} onChange={field.onChange} />
+                  )}
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Next Actions</label>
                 <Controller
@@ -76,9 +86,30 @@ const ProjectDialog = ({ project, onClose, onUpdate, users = [] }) => {
               <DateField name="endDate" control={control} label="End Date" formatDate={formatDate} />
             </div>
           </div>
-          <DialogFooter className="mt-6">
-            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-            <Button type="submit">Update Project</Button>
+          <DialogFooter className="mt-6 flex justify-between items-center">
+            <div>
+              <Button type="submit" className="mr-2">Save</Button>
+              <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            </div>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure you want to delete this project?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the project and all associated data.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={onDelete}>Delete</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </DialogFooter>
         </form>
       </DialogContent>
