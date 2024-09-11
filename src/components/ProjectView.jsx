@@ -4,71 +4,66 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../integrations/supabase/supabase';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import NextActions from './NextActions';
 import { ErrorBoundary } from 'react-error-boundary';
 
 const fetchProject = async (id) => {
-  console.log('Fetching project with id:', id);
   if (!id) throw new Error('Project ID is required');
-  try {
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*')
-      .eq('id', id)
-      .single();
-    if (error) {
-      console.error('Supabase error:', error);
-      throw error;
-    }
-    if (!data) {
-      console.error('Project not found for id:', id);
-      throw new Error('Project not found');
-    }
-    console.log('Fetched project data:', data);
-    return data;
-  } catch (error) {
-    console.error('Error in fetchProject:', error);
-    throw error;
-  }
+  const { data, error } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('id', id)
+    .single();
+  if (error) throw error;
+  if (!data) throw new Error('Project not found');
+  return data;
 };
 
 const ErrorFallback = ({ error, resetErrorBoundary }) => (
   <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-    <h2 className="text-lg font-semibold mb-2">Oops! Something went wrong:</h2>
-    <pre className="text-sm overflow-auto">{error.message}</pre>
+    <h2 className="text-lg font-semibold mb-2">An error occurred:</h2>
+    <p className="text-sm">{error.message}</p>
     <Button onClick={resetErrorBoundary} className="mt-4">Try again</Button>
   </div>
+);
+
+const ProjectDetails = ({ project }) => (
+  <Card>
+    <CardHeader>
+      <CardTitle>Project Details</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {[
+          { label: 'Name', value: project.name },
+          { label: 'Description', value: project.description },
+          { label: 'Status', value: project.status },
+          { label: 'Start Date', value: project.start_date },
+          { label: 'End Date', value: project.end_date },
+          { label: 'Assigned To', value: project.assigned_to },
+        ].map(({ label, value }) => (
+          <div key={label} className="border-t border-gray-200 pt-4">
+            <dt className="font-medium text-gray-500">{label}</dt>
+            <dd className="mt-1 text-sm text-gray-900">{value || 'Not specified'}</dd>
+          </div>
+        ))}
+      </dl>
+    </CardContent>
+  </Card>
 );
 
 const ProjectViewContent = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  console.log('ProjectViewContent rendered. ID:', id);
-
   const { data: project, isLoading, error } = useQuery({
     queryKey: ['project', id],
     queryFn: () => fetchProject(id),
-    retry: 1,
-    refetchOnWindowFocus: false,
     enabled: !!id,
   });
 
-  console.log('Query result:', { project, isLoading, error });
-
-  if (isLoading) return <div>Loading project...</div>;
-  if (error) {
-    console.error('Error in ProjectView:', error);
-    return <div>Error loading project: {error.message}</div>;
-  }
-  if (!project) return <div>Project not found</div>;
-
-  const renderProjectDetail = (label, value) => (
-    <div>
-      <h3 className="font-semibold">{label}</h3>
-      <p>{value || 'Not set'}</p>
-    </div>
-  );
+  if (isLoading) return <div className="text-center p-4">Loading project...</div>;
+  if (error) return <ErrorFallback error={error} resetErrorBoundary={() => navigate('/app/projects')} />;
+  if (!project) return <div className="text-center p-4">Project not found</div>;
 
   return (
     <div className="space-y-6">
@@ -76,49 +71,18 @@ const ProjectViewContent = () => {
         <h1 className="text-3xl font-bold">{project.name || 'Unnamed Project'}</h1>
         <Button onClick={() => navigate('/app/projects')}>Back to Projects</Button>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Project Details</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4">
-            {renderProjectDetail('Description', project.description)}
-            {renderProjectDetail('Status', project.status)}
-            {renderProjectDetail('Start Date', project.start_date)}
-            {renderProjectDetail('End Date', project.end_date)}
-            {renderProjectDetail('Assigned To', project.assigned_to)}
-          </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Next Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <NextActions projectId={project.id} actions={project.next_actions || []} />
-        </CardContent>
-      </Card>
+      <ProjectDetails project={project} />
     </div>
   );
 };
 
-const ProjectView = () => {
-  console.log('ProjectView component rendered');
-  return (
-    <ErrorBoundary
-      FallbackComponent={ErrorFallback}
-      onReset={() => {
-        console.log('Resetting error boundary');
-        window.location.reload();
-      }}
-      onError={(error, info) => {
-        console.error('Error caught by ErrorBoundary:', error);
-        console.error('Component stack:', info.componentStack);
-      }}
-    >
-      <ProjectViewContent />
-    </ErrorBoundary>
-  );
-};
+const ProjectView = () => (
+  <ErrorBoundary
+    FallbackComponent={ErrorFallback}
+    onReset={() => window.location.reload()}
+  >
+    <ProjectViewContent />
+  </ErrorBoundary>
+);
 
 export default ProjectView;
