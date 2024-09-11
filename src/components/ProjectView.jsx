@@ -7,12 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import NextActions from './NextActions';
 
 const fetchProject = async (id) => {
+  if (!id) throw new Error('Project ID is required');
   const { data, error } = await supabase
     .from('projects')
     .select('*')
     .eq('id', id)
     .single();
   if (error) throw error;
+  if (!data) throw new Error('Project not found');
   return data;
 };
 
