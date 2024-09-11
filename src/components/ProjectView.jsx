@@ -51,6 +51,7 @@ const ProjectViewContent = () => {
     queryFn: () => fetchProject(id),
     retry: 1,
     refetchOnWindowFocus: false,
+    enabled: !!id, // Only run the query if we have an ID
   });
 
   console.log('Query result:', { project, isLoading, error });
