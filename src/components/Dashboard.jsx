@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DragDropContext, Droppable } from '@hello-pangea/dnd';
 import ProjectList from './ProjectList';
+import NoteWidget from './NoteWidget';
 import ActivityList from './ActivityList';
 import ProjectDialog from './ProjectDialog';
-import NoteWidget from './NoteWidget';
-import NextActions from './NextActions';
 
 const fetchProjects = async () => {
   const storedProjects = localStorage.getItem('projects');
@@ -23,6 +22,8 @@ const fetchEnterpriseActivity = async () => {
 
 const Dashboard = () => {
   const [selectedProject, setSelectedProject] = useState(null);
+  const queryClient = useQueryClient();
+
   const { data: projects, isLoading: isLoadingProjects } = useQuery({
     queryKey: ['projects'],
     queryFn: fetchProjects,
@@ -33,13 +34,26 @@ const Dashboard = () => {
     queryFn: fetchEnterpriseActivity,
   });
 
+  const updateProjectMutation = useMutation({
+    mutationFn: (updatedProject) => {
+      const updatedProjects = projects.map(p => 
+        p.id === updatedProject.id ? updatedProject : p
+      );
+      localStorage.setItem('projects', JSON.stringify(updatedProjects));
+      return Promise.resolve(updatedProject);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries('projects');
+      setSelectedProject(null);
+    },
+  });
+
   const handleViewDetails = (project) => {
     setSelectedProject(project);
   };
 
   const handleUpdateProject = (updatedProject) => {
-    // Update project logic here
-    setSelectedProject(null);
+    updateProjectMutation.mutate(updatedProject);
   };
 
   const onDragEnd = (result) => {
@@ -57,6 +71,14 @@ const Dashboard = () => {
 
     localStorage.setItem('projects', JSON.stringify(updatedProjects));
     queryClient.setQueryData(['projects'], updatedProjects);
+  };
+
+  const handleStatusChange = (projectId, newStatus) => {
+    const updatedProject = projects.find(p => p.id === projectId);
+    if (updatedProject) {
+      updatedProject.status = newStatus;
+      updateProjectMutation.mutate(updatedProject);
+    }
   };
 
   if (isLoadingProjects || isLoadingActivities) {
@@ -82,6 +104,7 @@ const Dashboard = () => {
                         <ProjectList
                           projects={projects.filter(p => p.status === status)}
                           onViewDetails={handleViewDetails}
+                          onStatusChange={handleStatusChange}
                         />
                         {provided.placeholder}
                       </div>
@@ -93,9 +116,9 @@ const Dashboard = () => {
           </Card>
         </DragDropContext>
 
-        <ActivityList activities={activities} />
-
         <NoteWidget />
+
+        <ActivityList activities={activities} />
       </div>
 
       {selectedProject && (

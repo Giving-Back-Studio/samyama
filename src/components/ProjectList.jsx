@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Draggable } from '@hello-pangea/dnd';
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, CheckCircle, Circle } from "lucide-react";
 import NextActions from './NextActions';
 
-const ProjectList = ({ projects, onViewDetails }) => {
+const ProjectList = ({ projects, onViewDetails, onStatusChange }) => {
   const [expandedProjects, setExpandedProjects] = useState({});
 
   const toggleExpand = (projectId) => {
@@ -13,6 +13,18 @@ const ProjectList = ({ projects, onViewDetails }) => {
       ...prev,
       [projectId]: !prev[projectId]
     }));
+  };
+
+  const handleStatusChange = (projectId, currentStatus) => {
+    let newStatus;
+    if (currentStatus === 'To Do') {
+      newStatus = 'In Progress';
+    } else if (currentStatus === 'In Progress') {
+      newStatus = 'Done';
+    }
+    if (newStatus) {
+      onStatusChange(projectId, newStatus);
+    }
   };
 
   return (
@@ -36,6 +48,17 @@ const ProjectList = ({ projects, onViewDetails }) => {
                     <Button
                       variant="ghost"
                       size="sm"
+                      onClick={() => handleStatusChange(project.id, project.status)}
+                    >
+                      {project.status === 'Done' ? (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <Circle className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => onViewDetails(project)}
                     >
                       View Details
@@ -55,13 +78,8 @@ const ProjectList = ({ projects, onViewDetails }) => {
                   <div className="mt-2">
                     <h4 className="font-medium mb-1">Next Actions:</h4>
                     <NextActions
+                      projectId={project.id}
                       actions={project.nextActions || []}
-                      onToggleComplete={(actionId) => {
-                        // Implement toggle complete logic
-                      }}
-                      onReorder={(result) => {
-                        // Implement reorder logic
-                      }}
                     />
                   </div>
                 </CollapsibleContent>
