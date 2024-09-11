@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ErrorBoundary } from 'react-error-boundary';
 import ProjectDetails from './ProjectDetails';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const fetchProject = async (id) => {
   if (!id) throw new Error('Project ID is required');
@@ -27,6 +28,14 @@ const updateProject = async (project) => {
     .single();
   if (error) throw error;
   return data;
+};
+
+const deleteProject = async (id) => {
+  const { error } = await supabase
+    .from('projects')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
 };
 
 const fetchUsers = async () => {
@@ -70,7 +79,15 @@ const ProjectViewContent = () => {
     mutationFn: updateProject,
     onSuccess: () => {
       queryClient.invalidateQueries(['project', id]);
-      navigate('/projects');
+      navigate('/app/projects');
+    },
+  });
+
+  const deleteProjectMutation = useMutation({
+    mutationFn: deleteProject,
+    onSuccess: () => {
+      queryClient.invalidateQueries('projects');
+      navigate('/app/projects');
     },
   });
 
@@ -88,7 +105,11 @@ const ProjectViewContent = () => {
   };
 
   const handleCancel = () => {
-    navigate('/projects');
+    navigate('/app/projects');
+  };
+
+  const handleDelete = () => {
+    deleteProjectMutation.mutate(id);
   };
 
   return (
@@ -100,9 +121,29 @@ const ProjectViewContent = () => {
             onChange={handleChange}
             users={users}
           />
-          <div className="flex justify-end space-x-4 mt-6">
-            <Button onClick={handleCancel} variant="outline">Cancel</Button>
-            <Button onClick={handleSave}>Save</Button>
+          <div className="flex justify-between mt-6">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">Delete Project</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the project
+                    and remove all associated data from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <div className="space-x-4">
+              <Button onClick={handleCancel} variant="outline">Cancel</Button>
+              <Button onClick={handleSave}>Save</Button>
+            </div>
           </div>
         </CardContent>
       </Card>
