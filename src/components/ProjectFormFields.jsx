@@ -33,7 +33,7 @@ const ProjectFormFields = ({ control, errors }) => {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Next Actions</label>
           <Controller
-            name="nextActions"
+            name="next_actions"
             control={control}
             defaultValue={[]}
             render={({ field }) => (

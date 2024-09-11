@@ -9,7 +9,10 @@ const fetchProjects = async () => {
 
 const addProject = async (newProject) => {
   console.log('Adding new project:', newProject); // Debug log
-  const { data, error } = await supabase.from('projects').insert(newProject).single();
+  const { data, error } = await supabase.from('projects').insert({
+    ...newProject,
+    next_actions: newProject.next_actions || []
+  }).single();
   if (error) {
     console.error('Error adding project:', error); // Debug log
     throw error;
@@ -20,7 +23,10 @@ const addProject = async (newProject) => {
 const updateProject = async (updatedProject) => {
   const { data, error } = await supabase
     .from('projects')
-    .update(updatedProject)
+    .update({
+      ...updatedProject,
+      next_actions: updatedProject.next_actions || []
+    })
     .eq('id', updatedProject.id)
     .single();
   if (error) throw error;
