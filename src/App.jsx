@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Layout from "./components/Layout";
+import LandingPage from "./components/LandingPage";
 import SignupPage from "./components/SignupPage";
 import OnboardingPage from "./components/OnboardingPage";
 import Projects from "./components/Projects";
@@ -48,10 +49,11 @@ const App = () => (
           <Toaster />
           <BrowserRouter>
             <Routes>
+              <Route path="/" element={<LandingPage />} />
               <Route path="/signup" element={<SignupPage />} />
               <Route path="/onboarding" element={<OnboardingPage />} />
-              <Route path="/" element={<Layout />}>
-                <Route index element={<Navigate to="/projects" replace />} />
+              <Route path="/app" element={<Layout />}>
+                <Route index element={<Navigate to="/app/projects" replace />} />
                 <Route path="projects" element={<Projects />} />
                 <Route path="plants" element={<Plants />} />
                 <Route path="plant-locations" element={<PlantLocations />} />
