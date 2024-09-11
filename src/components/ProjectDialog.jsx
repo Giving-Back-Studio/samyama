@@ -72,8 +72,8 @@ const ProjectDialog = ({ project, onClose, onUpdate, users }) => {
                 as={UserSelect}
                 users={users}
               />
-              <DateField name="startDate" control={control} label="Start Date" />
-              <DateField name="endDate" control={control} label="End Date" />
+              <DateField name="startDate" control={control} label="Start Date" formatDate={formatDate} />
+              <DateField name="endDate" control={control} label="End Date" formatDate={formatDate} />
             </div>
           </div>
           <DialogFooter className="mt-6">
@@ -97,7 +97,7 @@ const FormField = ({ name, control, label, as: Component = Input, ...props }) =>
   </div>
 );
 
-const DateField = ({ name, control, label }) => (
+const DateField = ({ name, control, label, formatDate }) => (
   <FormField
     name={name}
     control={control}
